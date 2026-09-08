@@ -86,7 +86,7 @@ function speakableReference(source) {
 /* ---------- voice selection ---------- */
 
 const MALE_HINTS =
-  /male|david|daniel|george|james|john|thomas|arthur|ryan|guy|fred|alex\b|oliver|aaron|brian|eric|matthew|william|mark\b|paul\b/i;
+  /(?<!fe)male|david|daniel|george|james|john|thomas|arthur|ryan|guy|fred|alex\b|oliver|aaron|brian|eric|matthew|william|mark\b|paul\b/i;
 const FEMALE_HINTS =
   /female|zira|hazel|susan|samantha|victoria|karen|serena|kate|emma|amy|joanna|salli|olivia|sonia|libby|aria|jenny|catherine|fiona|moira|tessa|linda|heera/i;
 
@@ -103,24 +103,83 @@ function classifyVoices() {
   return { voices, male, female };
 }
 
+/** Waits for the device to finish reporting its installed voices. On some
+ *  Android phones, getVoices() returns an incomplete or empty list for a
+ *  moment after page load, and picking a voice too early — before the
+ *  full list is ready — is a major source of inconsistent voice choices. */
+function ensureVoicesLoaded() {
+  return new Promise((resolve) => {
+    if (window.speechSynthesis.getVoices().length > 0) {
+      resolve();
+      return;
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    window.speechSynthesis.onvoiceschanged = finish;
+    setTimeout(finish, 1200);
+  });
+}
+
+function restoreVoice(key, voices) {
+  try {
+    const name = localStorage.getItem(key);
+    return name ? voices.find((v) => v.name === name) || null : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistVoice(key, voice) {
+  try {
+    if (voice) localStorage.setItem(key, voice.name);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Picks (and permanently remembers) one voice for readings and one for the
+ *  Gospel role, so the same two voices are used every single time on this
+ *  device — never recalculated fresh, never inconsistent between plays.
+ *  Gospel always gets a lower pitch as a safety net if this device has no
+ *  voice whose name is actually identifiable as male. */
 function voiceMap() {
   const { voices, male, female } = classifyVoices();
   const fallback = voices[0] || null;
-  let general, gospel;
-  if (female.length || male.length) {
-    general = female[0] || fallback;
-    gospel = male[0] || fallback;
-  } else if (voices.length >= 2) {
-    general = voices[0];
-    gospel = voices[1];
-  } else {
-    general = gospel = fallback;
+
+  let general = restoreVoice("cdm-voice-general", voices) || female[0] || fallback;
+  let gospel = restoreVoice("cdm-voice-gospel", voices);
+  if (!gospel) {
+    gospel = male[0] || voices.find((v) => v !== general) || fallback;
   }
-  const map = { Mass_R1: general, Mass_Ps: general, Mass_R2: general, Mass_GA: general, Mass_G: gospel, default: fallback };
+
+  persistVoice("cdm-voice-general", general);
+  persistVoice("cdm-voice-gospel", gospel);
+
+  const gospelIsConfirmedMale = gospel && MALE_HINTS.test(gospel.name) && !FEMALE_HINTS.test(gospel.name);
+
+  const map = {
+    Mass_R1: general,
+    Mass_Ps: general,
+    Mass_R2: general,
+    Mass_GA: general,
+    Mass_G: gospel,
+    default: fallback,
+    gospelPitch: gospelIsConfirmedMale ? 1.0 : 0.72,
+  };
+
   // eslint-disable-next-line no-console
   console.log("[Daily Mass] Voices available:", voices.map((v) => v.name).join(", ") || "(none)");
   // eslint-disable-next-line no-console
-  console.log("[Daily Mass] Assigned — Readings/Psalm:", general?.name, "| Gospel/Blessing:", gospel?.name);
+  console.log(
+    "[Daily Mass] Readings/Psalm:", general?.name,
+    "| Gospel/Blessing:", gospel?.name,
+    gospelIsConfirmedMale ? "(confirmed male voice)" : "(no male-named voice found on this device — pitch lowered instead)"
+  );
+
   return map;
 }
 
@@ -149,7 +208,7 @@ function speakNext() {
   currentUtterance = utter; // hold a reference — prevents the Android GC bug
   if (item.voice) utter.voice = item.voice;
   utter.rate = SPEECH_RATE;
-  utter.pitch = 1.0;
+  utter.pitch = item.pitch ?? 1.0;
 
   let advanced = false;
   const advance = () => {
@@ -172,11 +231,12 @@ export function isSupported() {
   return "speechSynthesis" in window;
 }
 
-export function play(sections, handlers = {}) {
+export async function play(sections, handlers = {}) {
   stop();
   onProgress = handlers.onProgress || null;
   onDone = handlers.onDone || null;
 
+  await ensureVoicesLoaded();
   const map = voiceMap();
   queue = [];
 
@@ -185,6 +245,7 @@ export function play(sections, handlers = {}) {
   toSentences(OPENING_BLESSING).forEach((sentence, i, arr) => {
     queue.push({
       voice: map.Mass_G,
+      pitch: map.gospelPitch,
       text: sentence,
       isHeader: i === 0,
       key: "blessing",
@@ -194,19 +255,20 @@ export function play(sections, handlers = {}) {
 
   sections.forEach((s) => {
     const voice = map[s.key] || map.default;
+    const pitch = s.key === "Mass_G" ? map.gospelPitch : 1.0;
     const ref = speakableReference(s.source);
     const headerText = ref ? `${s.label}, ${ref}` : s.label;
 
-    queue.push({ key: s.key, voice, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
+    queue.push({ key: s.key, voice, pitch, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
 
     const sentences = toSentences(stripHtml(s.text));
     sentences.forEach((sentence, i) => {
       const isLast = i === sentences.length - 1;
-      queue.push({ key: s.key, voice, text: sentence, isHeader: false, gapAfter: isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS });
+      queue.push({ key: s.key, voice, pitch, text: sentence, isHeader: false, gapAfter: isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS });
     });
 
     if (s.key === "Mass_G") {
-      queue.push({ key: s.key, voice, text: "The Gospel of the Lord", isHeader: false, gapAfter: SECTION_GAP_MS });
+      queue.push({ key: s.key, voice, pitch, text: "The Gospel of the Lord", isHeader: false, gapAfter: SECTION_GAP_MS });
     }
   });
 
