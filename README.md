@@ -129,3 +129,88 @@ cloud TTS API — Google Cloud, Azure, or ElevenLabs all offer natural-
 sounding, consistent male and female voices that would sound the same on
 every device, at a small per-character cost. Worth exploring once the app
 is stable and you want to invest in audio quality.
+
+---
+
+# HD voices with Google Cloud Text-to-Speech (new)
+
+The app now plays a **pre-generated HD recording** of each day's readings
+(Google Cloud TTS: male voice for the blessing and Gospel, female for the
+rest, church bell first, proper pauses, "Alleluia … Alleluia" as a
+call-and-response). If no recording exists for a date — older archive dates,
+or if generation ever fails — the app quietly falls back to the phone's
+built-in voice, so nothing breaks. A small "HD voice" / "Device voice" label
+under the Listen button shows which is playing.
+
+Audio is generated **once per day for everyone** (not per listener), so a
+typical month uses ~100–150k characters — well inside Google's permanent
+free tier of 1,000,000/month for these voices. Expected cost: **$0**.
+
+## How it works
+
+1. `scripts/generate-audio.js` fetches the day's readings, builds SSML, calls
+   Google TTS, stitches bell + sections into `public/audio/YYYY-MM-DD.mp3`
+   and writes `YYYY-MM-DD.json` (section timings for highlighting).
+2. A GitHub Action (`.github/workflows/generate-audio.yml`) runs it every
+   night at **00:30 South Africa time** and commits the files. Vercel
+   redeploys automatically. Audio older than 14 days is pruned.
+3. The app checks `/audio/<date>.json`; if present it plays the MP3.
+
+## Safety limits (built in)
+
+- One date per run, no retry loops.
+- Hard cap: the script **refuses to run** if a day would exceed 12,000
+  characters (a real day is ~3–5k).
+- `--dry-run` shows exactly what would be sent, at zero cost.
+
+## One-time setup
+
+### A) Test locally first (recommended)
+
+In Git Bash, inside `daily-mass-pwa`:
+
+```bash
+npm install
+
+# point at your key (adjust the filename to your actual .json key)
+export GOOGLE_APPLICATION_CREDENTIALS="/c/Users/joao/Documents/Daily Mass Files Assets/YOUR-KEY-FILE.json"
+
+# 1) zero-cost check: fetches readings and prints the plan
+npm run generate-audio -- --dry-run
+
+# 2) real run for today (uses ~3–5k characters of your free tier)
+npm run generate-audio
+
+# 3) preview: start the app and press Listen — label should say "HD voice"
+npm run dev
+```
+
+Optional — hear other voices: `npm run list-voices`, then set
+`TTS_MALE_VOICE` / `TTS_FEMALE_VOICE` (e.g. `en-GB-Neural2-B`) before running.
+
+### B) Add the key to GitHub (so the nightly job can run)
+
+1. Open your key `.json` in Notepad and copy **all** of its contents.
+2. GitHub → your `catholic-daily-mass` repo → **Settings → Secrets and
+   variables → Actions → New repository secret**
+3. Name: `GOOGLE_CREDENTIALS_JSON` — Value: paste the JSON — **Add secret**.
+
+### C) Run it manually once before trusting the schedule
+
+GitHub → **Actions** tab → **Generate daily Mass audio** → **Run workflow**
+(leave date blank). Watch it complete, then check that
+`public/audio/<today>.mp3` appeared in the repo and Vercel redeployed.
+After that, the nightly schedule takes care of itself.
+
+## Notes
+
+- **Never commit the key file.** `.gitignore` blocks the usual key filenames,
+  and your key lives outside the project folder anyway.
+- Audio uses the **General** Universalis calendar (readings are the same
+  across regions; only local feast titles differ).
+- The generator uses the same official Universalis webmaster feed the app
+  already displays. If the audience grows substantially, it's worth a
+  courtesy email to Universalis confirming audio use is fine with them.
+- Google Actions runners include `ffmpeg`, so the bell and speech are
+  re-encoded into one clean MP3. Locally without ffmpeg, files are simply
+  joined (still plays; install ffmpeg for best results).

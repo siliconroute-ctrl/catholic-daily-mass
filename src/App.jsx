@@ -9,6 +9,7 @@ import { liturgicalYearLetter, weekdayCycleNumeral } from "./lib/liturgicalYear.
 import { loadSavedRegion, saveRegion } from "./lib/regions.js";
 import EntranceScreen from "./components/EntranceScreen.jsx";
 import { HeroArt, INTERIOR_PHOTOS } from "./components/EucharistArt.jsx";
+import { fetchAudioManifest } from "./lib/cloudAudio.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -28,7 +29,9 @@ export default function App() {
   const [reading, setReading] = useState(null);
   const [playState, setPlayState] = useState("idle");
   const [maleVoiceMissing, setMaleVoiceMissing] = useState(false);
+  const [hdAudio, setHdAudio] = useState(null); // manifest for pre-generated audio, or null
   const topRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (tts.isSupported()) {
@@ -46,16 +49,44 @@ export default function App() {
       .catch((err) => setState({ status: "error", message: err.message }));
   }, []);
 
-  // Fetch quietly in the background even while on the entrance screen, so
-  // the readings are already there the moment the person steps in.
-  useEffect(() => {
+  const stopAll = useCallback(() => {
     tts.stop();
+    const a = audioRef.current;
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+    }
     setPlayState("idle");
     setReading(null);
-    load(date, region);
-  }, [date, region, load]);
+  }, []);
 
-  useEffect(() => () => tts.stop(), []);
+  // Fetch quietly in the background even while on the entrance screen, so
+  // the readings are already there the moment the person steps in. Also
+  // check whether HD audio exists for this date.
+  useEffect(() => {
+    stopAll();
+    setHdAudio(null);
+    load(date, region);
+    let cancelled = false;
+    fetchAudioManifest(date).then((m) => {
+      if (!cancelled) setHdAudio(m);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [date, region, load, stopAll]);
+
+  useEffect(() => () => stopAll(), [stopAll]);
+
+  // Highlight the section being read while the HD audio plays.
+  const onAudioTime = () => {
+    const a = audioRef.current;
+    if (!a || !hdAudio) return;
+    const t = a.currentTime;
+    const sec = hdAudio.sections.find((s) => t >= s.start && t < s.end);
+    const key = sec ? sec.key : null;
+    setReading(key === "bell" ? null : key);
+  };
 
   const shift = (days) => setDate((d) => new Date(d.getTime() + days * DAY_MS));
   const isToday = sameDay(date, new Date());
@@ -70,6 +101,26 @@ export default function App() {
 
   const onListen = () => {
     if (state.status !== "ready") return;
+
+    // Preferred path: pre-generated HD audio for this date.
+    if (hdAudio && audioRef.current) {
+      const a = audioRef.current;
+      if (playState === "playing") {
+        a.pause();
+        setPlayState("paused");
+      } else {
+        a.play()
+          .then(() => setPlayState("playing"))
+          .catch(() => {
+            // If the browser refuses (rare), fall back to the device voice.
+            setHdAudio(null);
+            startDeviceVoice();
+          });
+      }
+      return;
+    }
+
+    // Fallback: device text-to-speech.
     if (playState === "playing") {
       tts.pause();
       setPlayState("paused");
@@ -77,22 +128,22 @@ export default function App() {
       tts.resume();
       setPlayState("playing");
     } else {
-      tts.play(state.data.sections, {
-        onProgress: (key) => setReading(key),
-        onDone: () => {
-          setPlayState("idle");
-          setReading(null);
-        },
-      });
-      setPlayState("playing");
+      startDeviceVoice();
     }
   };
 
-  const onStop = () => {
-    tts.stop();
-    setPlayState("idle");
-    setReading(null);
+  const startDeviceVoice = () => {
+    tts.play(state.data.sections, {
+      onProgress: (key) => setReading(key),
+      onDone: () => {
+        setPlayState("idle");
+        setReading(null);
+      },
+    });
+    setPlayState("playing");
   };
+
+  const onStop = () => stopAll();
 
   if (!entered) {
     return (
@@ -198,7 +249,7 @@ export default function App() {
         </p>
         <p className="ministry">A free ministry of the Catholic Daily Mass community. &#10013;</p>
 
-        {maleVoiceMissing && (
+        {maleVoiceMissing && !hdAudio && (
           <details className="voice-notice">
             <summary>No male voice found for the Gospel on this device</summary>
             <p>
@@ -226,7 +277,17 @@ export default function App() {
         )}
       </footer>
 
-      {state.status === "ready" && state.data.sections.length > 0 && tts.isSupported() && (
+      {hdAudio && (
+        <audio
+          ref={audioRef}
+          src={hdAudio.src}
+          preload="auto"
+          onTimeUpdate={onAudioTime}
+          onEnded={stopAll}
+        />
+      )}
+
+      {state.status === "ready" && state.data.sections.length > 0 && (hdAudio || tts.isSupported()) && (
         <div className="listenbar" role="toolbar" aria-label="Listen">
           <button className="listen-main" onClick={onListen}>
             {playState === "playing" ? "Pause" : playState === "paused" ? "Resume" : "\u25B6 Listen to the readings"}
@@ -236,6 +297,7 @@ export default function App() {
               Stop
             </button>
           )}
+          <span className="voice-source">{hdAudio ? "HD voice" : "Device voice"}</span>
         </div>
       )}
     </div>

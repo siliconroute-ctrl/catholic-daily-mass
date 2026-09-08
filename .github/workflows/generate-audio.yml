@@ -1,0 +1,55 @@
+name: Generate daily Mass audio
+
+on:
+  schedule:
+    # 22:30 UTC = 00:30 South Africa time — generates the new day's audio
+    # just after midnight so it's live well before anyone wakes up.
+    - cron: "30 22 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date to generate (YYYY-MM-DD). Leave blank for today (SA time)."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-audio
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - name: Write Google credentials
+        run: |
+          echo "$GOOGLE_CREDENTIALS_JSON" > "$RUNNER_TEMP/gcp-key.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gcp-key.json" >> "$GITHUB_ENV"
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+
+      - name: Generate audio
+        run: node scripts/generate-audio.js ${{ github.event.inputs.date }}
+
+      - name: Commit and push audio
+        run: |
+          git config user.name "daily-mass-bot"
+          git config user.email "daily-mass-bot@users.noreply.github.com"
+          git add public/audio
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Daily Mass audio $(date -u +%Y-%m-%d)"
+            git push
+          fi

@@ -6,14 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-audio": "node scripts/generate-audio.js",
+    "list-voices": "node scripts/generate-audio.js --list-voices"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@google-cloud/text-to-speech": "^7.0.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "music-metadata": "^11.15.0",
     "vite": "^5.4.0",
     "vite-plugin-pwa": "^0.20.0"
   }

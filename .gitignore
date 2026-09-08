@@ -4,3 +4,9 @@ dist
 *.log
 .env
 serviceAccountKey.json
+
+# Google service-account keys — never commit these
+*-service-account*.json
+daily-mass-text-to-speech-*.json
+gcp-key.json
+public/audio/.tmp-*

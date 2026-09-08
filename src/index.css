@@ -399,6 +399,16 @@ body {
   background: var(--garnet-soft);
 }
 
+.voice-source {
+  position: absolute;
+  right: 1rem;
+  bottom: -1.1rem;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  opacity: 0.8;
+}
+
 .listen-stop {
   font-family: inherit;
   font-size: 1rem;

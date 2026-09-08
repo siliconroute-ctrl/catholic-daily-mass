@@ -80,6 +80,23 @@ function expandAcclamation(sentences) {
   return out;
 }
 
+const BOOK_ABBR = {
+  Gen: "Genesis", Ex: "Exodus", Lev: "Leviticus", Num: "Numbers", Deut: "Deuteronomy", Dt: "Deuteronomy",
+  Jos: "Joshua", Jdg: "Judges", Ru: "Ruth", Sam: "Samuel", Kgs: "Kings", Chr: "Chronicles", Neh: "Nehemiah",
+  Tob: "Tobit", Jdt: "Judith", Est: "Esther", Mac: "Maccabees", Jb: "Job", Ps: "Psalm", Prov: "Proverbs",
+  Eccl: "Ecclesiastes", Qo: "Ecclesiastes", Sg: "Song of Songs", Wis: "Wisdom", Sir: "Sirach", Ecclus: "Ecclesiasticus",
+  Is: "Isaiah", Isa: "Isaiah", Jer: "Jeremiah", Lam: "Lamentations", Bar: "Baruch", Ezek: "Ezekiel", Ez: "Ezekiel",
+  Dan: "Daniel", Dn: "Daniel", Hos: "Hosea", Jl: "Joel", Am: "Amos", Ob: "Obadiah", Jon: "Jonah", Mic: "Micah",
+  Nah: "Nahum", Hab: "Habakkuk", Zeph: "Zephaniah", Hag: "Haggai", Zech: "Zechariah", Mal: "Malachi",
+  Mt: "Matthew", Mk: "Mark", Lk: "Luke", Jn: "John", Ac: "Acts", Acts: "Acts", Rom: "Romans", Cor: "Corinthians",
+  Gal: "Galatians", Eph: "Ephesians", Phil: "Philippians", Col: "Colossians", Thess: "Thessalonians",
+  Tim: "Timothy", Tit: "Titus", Philem: "Philemon", Heb: "Hebrews", Jas: "James", Pet: "Peter", Jude: "Jude",
+  Rev: "Revelation", Apoc: "Apocalypse",
+};
+function expandBookAbbreviations(s) {
+  return s.replace(/\b([A-Z][a-z]{1,5})\b\.?/g, (m, w) => BOOK_ABBR[w] || m);
+}
+
 const ORDINALS = { 1: "First", 2: "Second", 3: "Third" };
 
 
@@ -88,7 +105,7 @@ function speakableReference(source) {
   if (!s) return "";
   s = s.replace(/([A-Za-z])(\d)/g, "$1 $2");
   s = s.replace(/[\u2010\u2011\u2012\u2013\u2014]/g, "-");
-  s = s.replace(/\bPs\b\.?/i, "Psalm");
+  s = expandBookAbbreviations(s);
   s = s.replace(/^([123])\s+/, (_, d) => `${ORDINALS[d]} `);
 
   const match = s.match(/^(.+?)\s+(\d+):([\d,\-\s]+)$/);
