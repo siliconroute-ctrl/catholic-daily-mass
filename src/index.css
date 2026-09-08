@@ -1,0 +1,408 @@
+/* Catholic Daily Mass — a digital missal.
+   Vellum #F6EFDF · Garnet #6E1423 · Antique gold #A87B2D · Ink #2B1E16 */
+
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap");
+
+:root {
+  --vellum: #f6efdf;
+  --vellum-deep: #efe5cd;
+  --garnet: #6e1423;
+  --garnet-soft: #8a2433;
+  --gold: #a87b2d;
+  --ink: #2b1e16;
+  --ink-soft: #5a4a3d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--vellum);
+  color: var(--ink);
+  font-family: "EB Garamond", Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 7rem;
+  position: relative;
+}
+
+/* The ribbon — a missal's silk bookmark, falling from the top of the page */
+.ribbon {
+  position: fixed;
+  top: 0;
+  right: max(1rem, calc(50% - 24rem));
+  width: 14px;
+  height: 88px;
+  background: var(--garnet);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  z-index: 5;
+}
+
+/* Masthead */
+.masthead {
+  text-align: center;
+  padding: 2.75rem 0 1rem;
+}
+
+.brand {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 2rem;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--garnet);
+}
+
+.brand-sub {
+  margin: 0.35rem 0 0;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+/* Entrance screen — the "walking into Mass" cover page */
+.entrance {
+  max-width: 44rem;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-banner {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.entrance-body {
+  padding: 1.75rem 1.5rem 3rem;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.entrance-region {
+  margin: 1.5rem 0 2rem;
+}
+
+.enter-button {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: var(--garnet);
+  color: var(--vellum);
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 2.4rem;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(43, 30, 22, 0.28);
+  margin-top: auto;
+  margin-bottom: 6vh;
+}
+
+.enter-button:hover {
+  background: var(--garnet-soft);
+}
+
+/* Liturgical year + region row */
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-bottom: 0.9rem;
+}
+
+.year-pill {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--vellum);
+  background: var(--garnet);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  white-space: nowrap;
+}
+
+.year-pill-secondary {
+  background: transparent;
+  color: var(--garnet);
+  border: 1.5px solid var(--gold);
+}
+
+.region-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.region-picker-label {
+  font-style: italic;
+  display: block;
+}
+
+.region-picker-hint {
+  display: block;
+  font-size: 0.76rem;
+  opacity: 0.75;
+  font-style: normal;
+}
+
+.region-picker select {
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--vellum-deep);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  max-width: 11rem;
+}
+
+/* Date navigation */
+.datenav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  padding: 0.6rem 0;
+  margin: 1rem 0 0;
+}
+
+.datenav-btn {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--garnet);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.15rem 0.85rem 0.3rem;
+  cursor: pointer;
+  min-width: 52px;
+  min-height: 48px;
+}
+
+.datenav-btn:hover {
+  background: var(--vellum-deep);
+}
+
+.datenav-center {
+  text-align: center;
+}
+
+.datenav-date {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.today-link {
+  display: block;
+  margin: 0.15rem auto 0;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-style: italic;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.2rem;
+}
+
+/* Readings */
+.missal {
+  padding-top: 1.75rem;
+}
+
+.feast {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  text-align: center;
+  color: var(--ink);
+  margin: 0 0 2rem;
+}
+
+.feast::after {
+  content: "";
+  display: block;
+  width: 4.5rem;
+  height: 2px;
+  background: var(--gold);
+  margin: 1rem auto 0;
+}
+
+.reading {
+  margin: 0 0 2.5rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid transparent;
+  transition: border-color 0.4s, background-color 0.4s;
+}
+
+.reading.being-read {
+  border-left-color: var(--gold);
+  background: var(--vellum-deep);
+}
+
+.reading-label {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--garnet);
+  margin: 0 0 0.15rem;
+}
+
+.reading-source {
+  margin: 0 0 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 1rem;
+}
+
+.reading-text p {
+  margin: 0 0 1em;
+}
+
+/* The illuminated initial: only the Gospel receives it */
+.gospel .reading-text > p:first-of-type::first-letter {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 3.4em;
+  font-weight: 600;
+  color: var(--garnet);
+  float: left;
+  line-height: 0.82;
+  padding: 0.05em 0.12em 0 0;
+}
+
+/* Status + errors */
+.status {
+  text-align: center;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 3rem 0;
+}
+
+.retry {
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--garnet);
+  color: var(--vellum);
+  border: none;
+  border-radius: 4px;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+}
+
+/* Footer */
+.colophon {
+  border-top: 1px solid var(--gold);
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.copyright {
+  margin-bottom: 0.75rem;
+}
+
+.colophon a {
+  color: var(--garnet);
+}
+
+.ministry {
+  text-align: center;
+  margin-top: 1.25rem;
+}
+
+/* Listen bar */
+.listenbar {
+  position: fixed;
+  bottom: 4vh;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  padding: 0.8rem 1rem;
+}
+
+.listen-main {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  background: var(--garnet);
+  color: var(--vellum);
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 1.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(43, 30, 22, 0.25);
+  min-height: 52px;
+}
+
+.listen-main:hover {
+  background: var(--garnet-soft);
+}
+
+.listen-stop {
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--vellum);
+  color: var(--garnet);
+  border: 1.5px solid var(--garnet);
+  border-radius: 999px;
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  min-height: 52px;
+}
+
+/* Focus + reduced motion */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 18px;
+  }
+  .brand {
+    font-size: 1.6rem;
+  }
+  .ribbon {
+    right: 1rem;
+    height: 66px;
+  }
+}

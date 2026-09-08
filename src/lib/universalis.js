@@ -1,0 +1,201 @@
+/**
+ * Universalis JSONP loader.
+ * Official webmaster service: https://universalis.com/n-jsonp.htm
+ * Endpoint pattern: https://universalis.com/[calendar/]YYYYMMDD/jsonpmass.js
+ * The script calls window.universalisCallback(data).
+ *
+ * Terms we honour in this app (see n-jsonp-technical.htm):
+ *  - The copyright notice from the data is always displayed (Footer).
+ *  - A visible link to Universalis is always present (Footer).
+ */
+
+const BASE = "https://universalis.com";
+const CACHE_PREFIX = "cdm-readings-";
+const CACHE_KEEP = 14; // days of readings kept for offline use
+
+// Universalis calls a fixed global function name from its JSONP script.
+// Define it once and forever; requests register a pending handler with it.
+let pendingHandler = null;
+if (typeof window !== "undefined") {
+  window.universalisCallback = (data) => {
+    if (pendingHandler) pendingHandler(data);
+    // No pending handler = a stale/duplicate response; ignore silently.
+  };
+}
+
+/** YYYYMMDD for a Date */
+export function compactDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
+
+export function displayDate(d) {
+  return d.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function cacheKey(compact, calendar) {
+  return `${CACHE_PREFIX}${calendar || "general"}-${compact}`;
+}
+
+function readCache(compact, calendar) {
+  try {
+    const raw = localStorage.getItem(cacheKey(compact, calendar));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(compact, calendar, data) {
+  try {
+    localStorage.setItem(cacheKey(compact, calendar), JSON.stringify(data));
+    pruneCache();
+  } catch {
+    /* storage full or unavailable — not fatal */
+  }
+}
+
+function pruneCache() {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(CACHE_PREFIX)) keys.push(k);
+    }
+    keys
+      .sort() // date suffix sorts chronologically
+      .slice(0, Math.max(0, keys.length - CACHE_KEEP))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Fetch readings for a given Date via JSONP.
+ * @param {Date} date
+ * @param {string} calendar  optional Universalis calendar code, e.g. "africa.southafrica"
+ * @returns {Promise<object>} raw Universalis data object
+ */
+export function fetchReadings(date, calendar = "") {
+  const compact = compactDate(date);
+
+  // Serve from cache instantly if we have it (also = offline support)
+  const cached = readCache(compact, calendar);
+  if (cached) return Promise.resolve(cached);
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error("Universalis did not respond. Check your connection."));
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      script.remove();
+    }
+
+    // The callback stays permanently defined on window (Universalis calls a
+    // fixed function name). Each request registers itself as the pending
+    // handler; late or duplicate script responses resolve harmlessly.
+    pendingHandler = (data) => {
+      pendingHandler = null;
+      cleanup();
+      if (data && typeof data === "object") {
+        writeCache(compact, calendar, data);
+        resolve(data);
+      } else {
+        reject(new Error("Unexpected data from Universalis."));
+      }
+    };
+
+    const path = calendar
+      ? `${BASE}/${calendar}/${compact}/jsonpmass.js`
+      : `${BASE}/${compact}/jsonpmass.js`;
+
+    script.src = path;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Could not reach Universalis."));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Normalise the raw Universalis object into an ordered list of sections.
+ * Defensive: renders whatever reading keys exist, in liturgical order,
+ * then any unrecognised Mass_* keys, so feed changes never blank the app.
+ */
+const SECTION_ORDER = [
+  ["Mass_R1", "First Reading"],
+  ["Mass_Ps", "Responsorial Psalm"],
+  ["Mass_R2", "Second Reading"],
+  ["Mass_GA", "Gospel Acclamation"],
+  ["Mass_G", "Gospel"],
+];
+
+export function normaliseReadings(data) {
+  const sections = [];
+  const used = new Set();
+
+  const pick = (val) => {
+    if (val == null) return null;
+    if (typeof val === "string") return { source: "", text: val };
+    return {
+      source: val.source || val.heading || "",
+      text: val.text || val.body || "",
+    };
+  };
+
+  for (const [key, label] of SECTION_ORDER) {
+    const s = pick(data[key]);
+    if (s && s.text) {
+      sections.push({ key, label, ...s });
+      used.add(key);
+    }
+  }
+
+  // Any additional Mass_ sections the feed provides that we didn't map
+  for (const key of Object.keys(data)) {
+    if (key.startsWith("Mass_") && !used.has(key)) {
+      const s = pick(data[key]);
+      if (s && s.text) {
+        sections.push({
+          key,
+          label: key.replace("Mass_", "Reading "),
+          ...s,
+        });
+      }
+    }
+  }
+
+  const rawDay =
+    typeof data.day === "string"
+      ? data.day
+      : data.day?.text || data.day?.body || "";
+
+  return {
+    date: typeof data.date === "string" ? data.date : "",
+    day: stripToText(rawDay),
+    sections,
+    copyright: pick(data.copyright)?.text || "",
+  };
+}
+
+/** Universalis sends some fields as HTML (e.g. the feast title wrapped in a
+ *  styled div). Reduce to clean text, decoding entities like &#x2010;. */
+function stripToText(html) {
+  if (!html) return "";
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return (div.textContent || "").trim();
+}
