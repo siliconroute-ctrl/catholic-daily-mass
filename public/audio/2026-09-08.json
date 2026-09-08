@@ -1,7 +1,7 @@
 {
   "date": "2026-09-08",
   "day": "The Birthday of the Blessed Virgin Mary ‐ Feast",
-  "generatedAt": "2026-09-08T16:12:42.408Z",
+  "generatedAt": "2026-09-08T16:51:06.019Z",
   "voices": {
     "readings": "en-GB-Neural2-A",
     "gospel": "en-GB-Neural2-D"
@@ -45,5 +45,5 @@
       "end": 284.928
     }
   ],
-  "stitch": "concat"
+  "stitch": "ffmpeg-concat-filter"
 }
