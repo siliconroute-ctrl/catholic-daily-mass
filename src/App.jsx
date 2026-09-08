@@ -27,7 +27,14 @@ export default function App() {
   const [state, setState] = useState({ status: "loading" });
   const [reading, setReading] = useState(null);
   const [playState, setPlayState] = useState("idle");
+  const [maleVoiceMissing, setMaleVoiceMissing] = useState(false);
   const topRef = useRef(null);
+
+  useEffect(() => {
+    if (tts.isSupported()) {
+      tts.hasMaleVoice().then((has) => setMaleVoiceMissing(!has));
+    }
+  }, []);
 
   const load = useCallback((d, cal) => {
     setState({ status: "loading" });
@@ -190,6 +197,33 @@ export default function App() {
           .
         </p>
         <p className="ministry">A free ministry of the Catholic Daily Mass community. &#10013;</p>
+
+        {maleVoiceMissing && (
+          <details className="voice-notice">
+            <summary>No male voice found for the Gospel on this device</summary>
+            <p>
+              The Gospel is currently read in the same voice as the other
+              readings, since this phone doesn&rsquo;t have a voice
+              identifiable as male installed.
+            </p>
+            <p>
+              To add one: open your phone&rsquo;s <strong>Settings</strong> &rarr;{" "}
+              <strong>Text-to-speech output</strong> (on Samsung: Settings &rarr;
+              General management &rarr; Text-to-speech &rarr; tap the engine&rsquo;s
+              gear icon &rarr; Install voice data), then choose a male voice for
+              English.
+            </p>
+            <button
+              className="voice-reset"
+              onClick={() => {
+                tts.resetRememberedVoices();
+                tts.hasMaleVoice().then((has) => setMaleVoiceMissing(!has));
+              }}
+            >
+              I&rsquo;ve installed one — check again
+            </button>
+          </details>
+        )}
       </footer>
 
       {state.status === "ready" && state.data.sections.length > 0 && tts.isSupported() && (

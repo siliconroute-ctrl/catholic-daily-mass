@@ -97,3 +97,35 @@ already has the SPA rewrites configured.
 - Multiple languages (Spanish, French, Portuguese)
 - Google Play via TWA (Play Console already approved)
 - Sourcing the real daily Entrance Antiphon if a fuller data feed is added
+
+## Voice fixes (latest)
+
+- **No more fake male voice.** Pitch-shifting a female voice to sound male
+  was artificial and has been removed entirely. The Gospel now either uses
+  a genuinely male-named voice (if the device has one) or the same voice as
+  everything else — never a distorted approximation.
+- **A notice appears at the bottom of the reading page** if your device has
+  no male voice installed, with Samsung-specific steps to add one, and a
+  button to make the app pick it up immediately afterward (it otherwise
+  remembers whatever voice it originally chose).
+- **"Alleluia, alleluia"** in the Gospel Acclamation is now spoken as two
+  separate calls with a distinct pause between them, like a short choral
+  response, instead of one rushed phrase.
+- **Fixed a real bug causing missing pauses**: a safety timer meant only to
+  catch a stuck utterance was firing too early on some sentences, queuing
+  the next line before the phone had actually finished speaking. It's now
+  set with a much safer margin.
+- **Slower pace** (rate reduced again) and **longer gaps** between
+  sentences and readings.
+- **Stronger fix for the "dot" bug**: some sentences end with punctuation
+  immediately followed by a closing quote mark (e.g. `...your face.'`),
+  which the previous fix didn't catch. Both are now stripped.
+
+## About real, higher-quality voices (future option)
+
+Device text-to-speech (what this app uses now) is free and works offline,
+but quality varies a lot by phone. A proper upgrade path later would be a
+cloud TTS API — Google Cloud, Azure, or ElevenLabs all offer natural-
+sounding, consistent male and female voices that would sound the same on
+every device, at a small per-character cost. Worth exploring once the app
+is stable and you want to invest in audio quality.

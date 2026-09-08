@@ -119,6 +119,36 @@ body {
   background: var(--garnet-soft);
 }
 
+.voice-notice {
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: var(--vellum-deep);
+  font-size: 0.85rem;
+}
+
+.voice-notice summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--garnet);
+}
+
+.voice-notice p {
+  margin: 0.6rem 0;
+}
+
+.voice-reset {
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: var(--garnet);
+  color: var(--vellum);
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+}
+
 /* Liturgical year + region row */
 .meta-row {
   display: flex;

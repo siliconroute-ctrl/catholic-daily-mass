@@ -26,10 +26,11 @@ let active = false;
 let gapTimer = null;
 let currentUtterance = null;
 
-const HEADER_GAP_MS = 900;
-const SENTENCE_GAP_MS = 550;
+const HEADER_GAP_MS = 1000;
+const SENTENCE_GAP_MS = 750;
 const SECTION_GAP_MS = 2400;
-const SPEECH_RATE = 0.85;
+const CHORUS_GAP_MS = 700; // pause between the two "Alleluia"s
+const SPEECH_RATE = 0.82;
 
 const OPENING_BLESSING =
   "In the name of the Father, and of the Son, and of the Holy Spirit. " +
@@ -43,8 +44,13 @@ function stripHtml(html) {
   return (div.textContent || "").replace(/\s+/g, " ").trim();
 }
 
+/** Strips trailing sentence-ending punctuation — including when it's
+ *  followed by a closing quote mark (e.g. `...your face.'`), which a plain
+ *  end-of-string check misses. Our own pause conveys the sentence break;
+ *  leaving a lone period for the engine to interpret is what causes some
+ *  voices to read it aloud as the word "dot", especially on short lines. */
 function stripTerminalPunctuation(s) {
-  return s.replace(/[.!?;:]+\s*$/, "").trim();
+  return s.replace(/[.!?;:]+[\u2018\u2019\u201C\u201D"')\]]*\s*$/, "").trim();
 }
 
 function toSentences(text) {
@@ -56,7 +62,26 @@ function toSentences(text) {
   return cleaned.length ? cleaned : [stripTerminalPunctuation(text)];
 }
 
+/** In the Gospel Acclamation, "Alleluia, alleluia" is meant to sound like a
+ *  short choral call-and-response, not one rushed word. Splits that pair
+ *  into two separate spoken items with a distinct pause between them. */
+const ALLELUIA_PAIR = /^alleluia\s*,?\s*alleluia$/i;
+
+function expandAcclamation(sentences) {
+  const out = [];
+  sentences.forEach((sentence) => {
+    if (ALLELUIA_PAIR.test(sentence)) {
+      out.push({ text: "Alleluia", gapAfter: CHORUS_GAP_MS });
+      out.push({ text: "Alleluia", gapAfter: null });
+    } else {
+      out.push({ text: sentence, gapAfter: null });
+    }
+  });
+  return out;
+}
+
 const ORDINALS = { 1: "First", 2: "Second", 3: "Third" };
+
 
 function speakableReference(source) {
   let s = stripHtml(source);
@@ -141,20 +166,36 @@ function persistVoice(key, voice) {
   }
 }
 
+/** Clears the device's remembered voice choices. Call this after installing
+ *  a new voice pack in the phone's settings, so the app picks it up instead
+ *  of continuing to reuse whatever it chose before. */
+export function resetRememberedVoices() {
+  try {
+    localStorage.removeItem("cdm-voice-general");
+    localStorage.removeItem("cdm-voice-gospel");
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Reports whether this device currently has a voice identifiable as male,
+ *  without picking or remembering anything — safe to call for a UI check. */
+export async function hasMaleVoice() {
+  await ensureVoicesLoaded();
+  return classifyVoices().male.length > 0;
+}
+
 /** Picks (and permanently remembers) one voice for readings and one for the
- *  Gospel role, so the same two voices are used every single time on this
- *  device — never recalculated fresh, never inconsistent between plays.
- *  Gospel always gets a lower pitch as a safety net if this device has no
- *  voice whose name is actually identifiable as male. */
+ *  Gospel role, so the same two voices are used every time on this device.
+ *  If no voice on this device is identifiable as male, the Gospel simply
+ *  uses the same voice as everything else — no pitch-shifting trick, which
+ *  sounds artificial. See hasMaleVoice() for surfacing this to the user. */
 function voiceMap() {
   const { voices, male, female } = classifyVoices();
   const fallback = voices[0] || null;
 
   let general = restoreVoice("cdm-voice-general", voices) || female[0] || fallback;
-  let gospel = restoreVoice("cdm-voice-gospel", voices);
-  if (!gospel) {
-    gospel = male[0] || voices.find((v) => v !== general) || fallback;
-  }
+  let gospel = restoreVoice("cdm-voice-gospel", voices) || male[0] || general;
 
   persistVoice("cdm-voice-general", general);
   persistVoice("cdm-voice-gospel", gospel);
@@ -168,7 +209,6 @@ function voiceMap() {
     Mass_GA: general,
     Mass_G: gospel,
     default: fallback,
-    gospelPitch: gospelIsConfirmedMale ? 1.0 : 0.72,
   };
 
   // eslint-disable-next-line no-console
@@ -177,7 +217,7 @@ function voiceMap() {
   console.log(
     "[Daily Mass] Readings/Psalm:", general?.name,
     "| Gospel/Blessing:", gospel?.name,
-    gospelIsConfirmedMale ? "(confirmed male voice)" : "(no male-named voice found on this device — pitch lowered instead)"
+    gospelIsConfirmedMale ? "(confirmed male voice)" : "(no male voice on this device — using the same voice as other readings, no pitch trick)"
   );
 
   return map;
@@ -208,7 +248,7 @@ function speakNext() {
   currentUtterance = utter; // hold a reference — prevents the Android GC bug
   if (item.voice) utter.voice = item.voice;
   utter.rate = SPEECH_RATE;
-  utter.pitch = item.pitch ?? 1.0;
+  utter.pitch = 1.0;
 
   let advanced = false;
   const advance = () => {
@@ -221,7 +261,14 @@ function speakNext() {
   utter.onend = advance;
   utter.onerror = advance;
 
-  const estimatedMs = Math.max(2200, item.text.split(/\s+/).length * 420);
+  // This is a safety net for the rare case where the browser never fires
+  // onend/onerror at all — NOT a routine substitute for it. An earlier,
+  // tighter estimate here was firing before some sentences had actually
+  // finished playing, which queued the next line immediately afterward
+  // with no audible gap. A generous margin avoids that while still
+  // catching a genuinely stuck utterance (which would otherwise hang
+  // silently forever).
+  const estimatedMs = Math.max(4000, item.text.split(/\s+/).length * 600);
   const watchdog = setTimeout(advance, estimatedMs);
 
   window.speechSynthesis.speak(utter);
@@ -240,12 +287,11 @@ export async function play(sections, handlers = {}) {
   const map = voiceMap();
   queue = [];
 
-  // Church bell, then the opening blessing in the Gospel/male voice.
+  // Church bell, then the opening blessing in the Gospel voice.
   queue.push({ type: "bell", gapAfter: 900 });
   toSentences(OPENING_BLESSING).forEach((sentence, i, arr) => {
     queue.push({
       voice: map.Mass_G,
-      pitch: map.gospelPitch,
       text: sentence,
       isHeader: i === 0,
       key: "blessing",
@@ -255,20 +301,27 @@ export async function play(sections, handlers = {}) {
 
   sections.forEach((s) => {
     const voice = map[s.key] || map.default;
-    const pitch = s.key === "Mass_G" ? map.gospelPitch : 1.0;
     const ref = speakableReference(s.source);
     const headerText = ref ? `${s.label}, ${ref}` : s.label;
 
-    queue.push({ key: s.key, voice, pitch, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
+    queue.push({ key: s.key, voice, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
 
-    const sentences = toSentences(stripHtml(s.text));
-    sentences.forEach((sentence, i) => {
-      const isLast = i === sentences.length - 1;
-      queue.push({ key: s.key, voice, pitch, text: sentence, isHeader: false, gapAfter: isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS });
+    const rawSentences = toSentences(stripHtml(s.text));
+    const items = s.key === "Mass_GA" ? expandAcclamation(rawSentences) : rawSentences.map((t) => ({ text: t, gapAfter: null }));
+
+    items.forEach((it, i) => {
+      const isLast = i === items.length - 1;
+      queue.push({
+        key: s.key,
+        voice,
+        text: it.text,
+        isHeader: false,
+        gapAfter: it.gapAfter ?? (isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS),
+      });
     });
 
     if (s.key === "Mass_G") {
-      queue.push({ key: s.key, voice, pitch, text: "The Gospel of the Lord", isHeader: false, gapAfter: SECTION_GAP_MS });
+      queue.push({ key: s.key, voice, text: "The Gospel of the Lord", isHeader: false, gapAfter: SECTION_GAP_MS });
     }
   });
 
