@@ -10,11 +10,18 @@
   --garnet-soft: #8a2433;
   --gold: #a87b2d;
   --ink: #2b1e16;
-  --ink-soft: #5a4a3d;
+  --ink-soft: #3d2a1a;
 }
 
 * {
   box-sizing: border-box;
+}
+
+select,
+button,
+input,
+textarea {
+  font-family: "EB Garamond", Georgia, "Times New Roman", serif;
 }
 
 html {
@@ -26,7 +33,7 @@ body {
   background: var(--vellum);
   color: var(--ink);
   font-family: "EB Garamond", Georgia, "Times New Roman", serif;
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.65;
 }
 
@@ -68,7 +75,7 @@ body {
   margin: 0.35rem 0 0;
   color: var(--ink-soft);
   font-style: italic;
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 
 /* Entrance screen — the "walking into Mass" cover page */
@@ -180,7 +187,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--ink-soft);
 }
 
@@ -191,21 +198,20 @@ body {
 
 .region-picker-hint {
   display: block;
-  font-size: 0.76rem;
-  opacity: 0.75;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
   font-style: normal;
 }
 
 .region-picker select {
-  font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--ink);
   background: var(--vellum-deep);
   border: 1px solid var(--gold);
   border-radius: 999px;
-  padding: 0.3rem 0.7rem;
+  padding: 0.4rem 0.8rem;
   cursor: pointer;
-  max-width: 11rem;
+  max-width: 13rem;
 }
 
 /* Date navigation */
@@ -352,7 +358,7 @@ body {
   border-top: 1px solid var(--gold);
   margin-top: 1rem;
   padding-top: 1.25rem;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--ink-soft);
 }
 
