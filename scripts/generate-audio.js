@@ -280,26 +280,41 @@ function hasFfmpeg() {
   }
 }
 
-/** Stitch bell + sections. Uses ffmpeg (re-encode to one consistent MP3) when
- *  available — the bell recording and Google's output have different sample
- *  rates, and a re-encode guarantees clean playback and correct durations
- *  everywhere. Falls back to raw concatenation otherwise. */
+/** Stitch bell + sections into one clean MP3. Requires ffmpeg — earlier
+ *  versions of this script silently fell back to raw byte concatenation
+ *  when ffmpeg was missing, which plays fine in lenient players but can
+ *  stop after the first clip in stricter ones (VLC, Windows Media Player),
+ *  since gluing separately-encoded MP3s together at the byte level often
+ *  confuses decoders once the audio format changes mid-file. That fallback
+ *  has been removed: this now fails loudly instead of shipping silently
+ *  broken audio. Uses ffmpeg's concat FILTER (not the concat demuxer) —
+ *  it decodes every input fully and re-encodes once as a single continuous
+ *  stream, which is the robust way to join files with differing formats. */
 function stitch(pieces, outPath) {
-  if (hasFfmpeg()) {
-    const tmpDir = fs.mkdtempSync(path.join(OUT_DIR, ".tmp-"));
-    const listPath = path.join(tmpDir, "list.txt");
-    const lines = pieces.map((p, i) => {
-      const f = path.join(tmpDir, `p${i}.mp3`);
-      fs.writeFileSync(f, p);
-      return `file '${f.replace(/'/g, "'\\''")}'`;
-    });
-    fs.writeFileSync(listPath, lines.join("\n"));
-    execFileSync("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-ar", "24000", "-ac", "1", "-b:a", "64k", outPath], { stdio: "ignore" });
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    return "ffmpeg";
+  if (!hasFfmpeg()) {
+    throw new Error(
+      "ffmpeg is required but was not found. Install it (the GitHub Action " +
+        "does this automatically) — refusing to fall back to raw concatenation, " +
+        "which produces broken audio in strict players."
+    );
   }
-  fs.writeFileSync(outPath, Buffer.concat(pieces));
-  return "concat";
+  const tmpDir = fs.mkdtempSync(path.join(OUT_DIR, ".tmp-"));
+  const inputArgs = [];
+  const filterInputs = [];
+  pieces.forEach((p, i) => {
+    const f = path.join(tmpDir, `p${i}.mp3`);
+    fs.writeFileSync(f, p);
+    inputArgs.push("-i", f);
+    filterInputs.push(`[${i}:a]`);
+  });
+  const filter = `${filterInputs.join("")}concat=n=${pieces.length}:v=0:a=1[out]`;
+  execFileSync(
+    "ffmpeg",
+    ["-y", ...inputArgs, "-filter_complex", filter, "-map", "[out]", "-ar", "24000", "-ac", "1", "-b:a", "64k", outPath],
+    { stdio: "inherit" }
+  );
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  return "ffmpeg-concat-filter";
 }
 
 function prune() {
@@ -384,7 +399,8 @@ function prune() {
   prune();
 
   const mb = (fs.statSync(mp3Path).size / 1048576).toFixed(2);
-  console.log(`\nDone: ${path.relative(ROOT, mp3Path)} (${mb} MB, ${Math.round(t)}s, stitched via ${method})`);
+  console.log(`\nDone: ${path.relative(ROOT, mp3Path)} (${mb} MB, ${Math.round(t)}s)`);
+  console.log(`Stitched via: ${method} — ${pieces.length} pieces (bell + ${sections.length} sections)`);
 })().catch((err) => {
   console.error("\nFAILED:", err.message);
   process.exit(1);

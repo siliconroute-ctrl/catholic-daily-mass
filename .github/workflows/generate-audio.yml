@@ -32,6 +32,13 @@ jobs:
 
       - run: npm install
 
+      - name: Ensure ffmpeg is installed
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
+
       - name: Write Google credentials
         run: |
           echo "$GOOGLE_CREDENTIALS_JSON" > "$RUNNER_TEMP/gcp-key.json"
