@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-08",
+  "day": "The Birthday of the Blessed Virgin Mary ‐ Feast",
+  "generatedAt": "2026-09-08T16:06:23.563Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 284.928,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 15.576,
+      "end": 56.952
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 56.952,
+      "end": 83.088
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 83.088,
+      "end": 98.472
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 98.472,
+      "end": 284.928
+    }
+  ],
+  "stitch": "concat"
+}
