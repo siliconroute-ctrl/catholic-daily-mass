@@ -576,3 +576,31 @@ a:focus-visible {
 .about-footer .enter-button {
   margin-bottom: 1rem;
 }
+
+/* Mass conclusion section */
+.conclusion-divider {
+  border: none;
+  border-top: 2px solid var(--gold);
+  margin: 2rem 0 2rem;
+  opacity: 0.6;
+}
+
+.reading.conclusion .reading-label {
+  color: var(--gold);
+}
+
+.conclusion-intro {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 0.9rem;
+}
+
+.conclusion-note {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gold);
+}

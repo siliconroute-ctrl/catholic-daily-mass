@@ -30,6 +30,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import textToSpeech from "@google-cloud/text-to-speech";
 import { parseBuffer } from "music-metadata";
+import { MASS_CONCLUSION_SECTIONS } from "../src/lib/massConclusion.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -319,6 +320,17 @@ function buildPlan({ day, sections }) {
     }
     plan.push({ key: s.key, label: s.label, voice, ssmlRequests: packRequests(parts, { tailBreak: "2200ms" }) });
   }
+
+  // Fixed, non-date-dependent conclusion (see massConclusion.js for why the
+  // Eucharistic Prayer itself is never included).
+  for (const s of MASS_CONCLUSION_SECTIONS) {
+    const voice = s.voiceRole === "priest" ? MALE_VOICE : FEMALE_VOICE;
+    const parts = [];
+    if (s.intro) parts.push(esc(s.intro) + `<break time="900ms"/>`);
+    parts.push(...sentencesToSsmlParts(toSentences(s.text)));
+    plan.push({ key: s.key, label: s.label, voice, ssmlRequests: packRequests(parts, { tailBreak: "2200ms" }) });
+  }
+
   return plan;
 }
 

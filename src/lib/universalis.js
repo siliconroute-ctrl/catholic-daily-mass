@@ -89,16 +89,10 @@ function pruneCache() {
   }
 }
 
-/**
- * Fetch readings for a given Date via JSONP.
- * @param {Date} date
- * @param {string} calendar  optional Universalis calendar code, e.g. "africa.southafrica"
- * @returns {Promise<object>} raw Universalis data object
- */
-export function fetchReadings(date, calendar = "") {
+/** A single JSONP request for one date + calendar. */
+function fetchOnce(date, calendar) {
   const compact = compactDate(date);
 
-  // Serve from cache instantly if we have it (also = offline support)
   const cached = readCache(compact, calendar);
   if (cached) return Promise.resolve(cached);
 
@@ -114,9 +108,6 @@ export function fetchReadings(date, calendar = "") {
       script.remove();
     }
 
-    // The callback stays permanently defined on window (Universalis calls a
-    // fixed function name). Each request registers itself as the pending
-    // handler; late or duplicate script responses resolve harmlessly.
     pendingHandler = (data) => {
       pendingHandler = null;
       cleanup();
@@ -139,6 +130,47 @@ export function fetchReadings(date, calendar = "") {
     };
     document.head.appendChild(script);
   });
+}
+
+/**
+ * Fetch readings for a given Date via JSONP, with automatic fallback.
+ * If a regional calendar's data for this date is missing its Gospel or
+ * Psalm (a regional-calendar gap — confirmed to happen occasionally, even
+ * on dates where the General calendar is complete), this automatically
+ * retries with the General calendar and uses that instead, so a regional
+ * gap can never blank out the Psalm or Gospel for the reader.
+ * @param {Date} date
+ * @param {string} calendar  optional Universalis calendar code, e.g. "africa.safrica"
+ * @returns {Promise<object>} raw Universalis data object
+ */
+export async function fetchReadings(date, calendar = "") {
+  let primary = null;
+  let primaryError = null;
+  try {
+    primary = await fetchOnce(date, calendar);
+  } catch (err) {
+    primaryError = err;
+  }
+
+  const isComplete = (d) => Boolean(d && d.Mass_G && d.Mass_Ps);
+
+  if (calendar && !isComplete(primary)) {
+    try {
+      const general = await fetchOnce(date, "");
+      if (isComplete(general)) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[Daily Mass] "${calendar}" calendar was incomplete or unreachable for this date — used the General calendar instead.`
+        );
+        return general;
+      }
+    } catch {
+      /* General didn't help either — fall through to whatever we have */
+    }
+  }
+
+  if (primary) return primary;
+  throw primaryError || new Error("Could not reach Universalis.");
 }
 
 /**

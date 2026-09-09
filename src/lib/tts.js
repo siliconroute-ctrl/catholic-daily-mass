@@ -17,6 +17,7 @@
  * completion at all.
  */
 import { ringBell } from "./bell.js";
+import { MASS_CONCLUSION_SECTIONS } from "./massConclusion.js";
 
 let queue = [];
 let current = -1;
@@ -447,6 +448,24 @@ export async function play(sections, handlers = {}) {
     if (isGospel) {
       queue.push({ key: s.key, voice, text: "The Gospel of the Lord.", isHeader: false, gapAfter: SECTION_GAP_MS });
     }
+  });
+
+  // Fixed, non-date-dependent conclusion: Creed, Spiritual Communion,
+  // Lord's Prayer, and a brief blessing/dismissal (see massConclusion.js
+  // for why the Eucharistic Prayer itself is never included).
+  MASS_CONCLUSION_SECTIONS.forEach((s) => {
+    const voice = s.voiceRole === "priest" ? map.Mass_G : map.Mass_R1;
+    let firstPushed = false;
+    const pushItem = (text, gapAfter) => {
+      queue.push({ key: s.key, voice, text, isHeader: !firstPushed, gapAfter });
+      firstPushed = true;
+    };
+    if (s.intro) pushItem(s.intro, HEADER_GAP_MS);
+    const sentences = toSentences(s.text);
+    sentences.forEach((sentence, i) => {
+      const isLast = i === sentences.length - 1;
+      pushItem(sentence, isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS);
+    });
   });
 
   current = -1;

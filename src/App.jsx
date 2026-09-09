@@ -11,6 +11,7 @@ import EntranceScreen from "./components/EntranceScreen.jsx";
 import AboutPage from "./components/AboutPage.jsx";
 import { HeroArt, INTERIOR_PHOTOS } from "./components/EucharistArt.jsx";
 import { fetchAudioManifest } from "./lib/cloudAudio.js";
+import { MASS_CONCLUSION_SECTIONS } from "./lib/massConclusion.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -277,6 +278,28 @@ export default function App() {
                 No readings were returned for this day. Try another date, or
                 read them directly on Universalis below.
               </p>
+            )}
+
+            {state.data.sections.length > 0 && (
+              <>
+                <hr className="conclusion-divider" />
+                {MASS_CONCLUSION_SECTIONS.map((s) => (
+                  <section
+                    key={s.key}
+                    className={"reading conclusion" + (reading === s.key ? " being-read" : "")}
+                  >
+                    <h3 className="reading-label">{s.label}</h3>
+                    {s.intro && <p className="conclusion-intro">{s.intro}</p>}
+                    <div className="reading-text">
+                      <p>{s.text}</p>
+                    </div>
+                  </section>
+                ))}
+                <p className="conclusion-note">
+                  This app does not include the Eucharistic Prayer, as it can
+                  only be validly celebrated by an ordained priest at Mass.
+                </p>
+              </>
             )}
           </>
         )}
