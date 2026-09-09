@@ -25,6 +25,7 @@ textarea {
 }
 
 html {
+  font-size: 18px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -99,14 +100,14 @@ body {
    and stays untouched. */
 .entrance-banner {
   width: 100%;
-  height: 60vh;
+  height: 45vh;
   object-fit: cover;
   display: block;
   flex-shrink: 0;
 }
 
 .entrance-body {
-  padding: 1.5rem 1.5rem 2.5rem;
+  padding: 1.1rem 1.5rem 1.75rem;
   text-align: center;
   flex: 1;
   display: flex;
@@ -115,7 +116,7 @@ body {
 }
 
 .entrance-region {
-  margin: 1.5rem 0 2rem;
+  margin: 1rem 0 1.25rem;
 }
 
 .enter-button {
@@ -130,7 +131,7 @@ body {
   cursor: pointer;
   box-shadow: 0 3px 12px rgba(43, 30, 22, 0.28);
   margin-top: auto;
-  margin-bottom: 6vh;
+  margin-bottom: 3vh;
 }
 
 .enter-button:hover {
@@ -467,11 +468,14 @@ a:focus-visible {
 }
 
 @media (max-width: 480px) {
+  html {
+    font-size: 20px;
+  }
   body {
-    font-size: 18px;
+    font-size: 23px;
   }
   .brand {
-    font-size: 1.6rem;
+    font-size: 1.9rem;
   }
   .ribbon {
     right: 1rem;

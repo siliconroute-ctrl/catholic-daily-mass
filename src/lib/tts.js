@@ -402,14 +402,15 @@ export async function play(sections, handlers = {}) {
     const isAcclamation = s.key === "Mass_GA";
 
     if (isPsalm || isAcclamation) {
-      // No announcement — go straight into the content itself.
+      const label = isPsalm ? "Responsorial Psalm." : "The Gospel Acclamation.";
+      queue.push({ key: s.key, voice, text: label, isHeader: true, gapAfter: HEADER_GAP_MS });
       items.forEach((it, i) => {
         const isLast = i === items.length - 1;
         queue.push({
           key: s.key,
           voice,
           text: it.text,
-          isHeader: i === 0,
+          isHeader: false,
           gapAfter: it.gapAfter ?? (isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS),
         });
       });

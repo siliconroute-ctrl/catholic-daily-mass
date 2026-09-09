@@ -308,9 +308,9 @@ function buildPlan({ day, sections }) {
 
     let parts;
     if (isPsalm) {
-      parts = sentencesToPsalmSsmlParts(body);
+      parts = [`Responsorial Psalm.<break time="500ms"/>`, ...sentencesToPsalmSsmlParts(body)];
     } else if (isAcclamation) {
-      parts = sentencesToSsmlParts(body, { acclamation: true });
+      parts = [`The Gospel Acclamation.<break time="500ms"/>`, ...sentencesToSsmlParts(body, { acclamation: true })];
     } else {
       const header = liturgicalIntroduction(s.source, isGospel);
       parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: false })];

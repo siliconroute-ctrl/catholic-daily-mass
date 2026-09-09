@@ -248,7 +248,15 @@ export default function App() {
                 {s.source && (
                   <p className="reading-source" dangerouslySetInnerHTML={{ __html: s.source }} />
                 )}
-                <div className="reading-text" dangerouslySetInnerHTML={{ __html: s.text }} />
+                {s.key === "Mass_Ps" && s.paragraphs?.length ? (
+                  <div className="reading-text">
+                    {s.paragraphs.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="reading-text" dangerouslySetInnerHTML={{ __html: s.text }} />
+                )}
               </section>
             ))}
 

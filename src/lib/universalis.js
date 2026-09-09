@@ -143,6 +143,31 @@ const SECTION_ORDER = [
   ["Mass_G", "Gospel"],
 ];
 
+/** Converts a section's HTML into safe plain-text paragraphs. Used as a
+ *  guaranteed-visible fallback for on-screen rendering when raw HTML from
+ *  the feed might be malformed in a way a browser silently hides (while
+ *  text-extraction for the voice, which is far more forgiving of odd
+ *  markup, still finds and speaks the content fine). */
+function toParagraphs(html) {
+  if (!html) return [];
+  let s = String(html)
+    .replace(/<br\s*\/?>/gi, "\u0001")
+    .replace(/<\/p>/gi, "\u0001")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'");
+  return s
+    .split("\u0001")
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
 export function normaliseReadings(data) {
   const sections = [];
   const used = new Set();
@@ -159,7 +184,7 @@ export function normaliseReadings(data) {
   for (const [key, label] of SECTION_ORDER) {
     const s = pick(data[key]);
     if (s && s.text) {
-      sections.push({ key, label, ...s });
+      sections.push({ key, label, ...s, paragraphs: toParagraphs(s.text) });
       used.add(key);
     } else if (key === "Mass_Ps") {
       // The Psalm is present in nearly every Mass. If it's ever missing,
