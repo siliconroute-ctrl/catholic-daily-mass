@@ -30,6 +30,7 @@ const HEADER_GAP_MS = 1000;
 const SENTENCE_GAP_MS = 750;
 const SECTION_GAP_MS = 2400;
 const CHORUS_GAP_MS = 700; // pause between the two "Alleluia"s
+const REFRAIN_GAP_MS = 1100; // pause after the Psalm response, standing in for the congregation's turn
 const SPEECH_RATE = 0.82;
 
 const OPENING_BLESSING =
@@ -78,6 +79,21 @@ function expandAcclamation(sentences) {
     }
   });
   return out;
+}
+
+/** The Responsorial Psalm's response line repeats between verses in
+ *  Universalis' own text — exactly matching the real liturgical structure
+ *  (reader states it, then repeats it after each verse). This gives those
+ *  repeats a distinctly longer pause, standing in for the congregation's
+ *  turn to speak it aloud. No separate announcement is added — the reader
+ *  never says "Responsorial Psalm" or a Psalm number aloud. */
+function markPsalmStructure(sentences) {
+  if (!sentences.length) return [];
+  const refrainNorm = sentences[0].trim().toLowerCase();
+  return sentences.map((t) => ({
+    text: t,
+    gapAfter: t.trim().toLowerCase() === refrainNorm ? REFRAIN_GAP_MS : null,
+  }));
 }
 
 const BOOK_ABBR = {
@@ -370,19 +386,42 @@ export async function play(sections, handlers = {}) {
     const voice = map[s.key] || map.default;
     const isReading = s.key === "Mass_R1" || s.key === "Mass_R2";
     const isGospel = s.key === "Mass_G";
-
-    let headerText;
-    if (isReading || isGospel) {
-      headerText = liturgicalIntroduction(s.source, isGospel);
-    } else {
-      const ref = speakableReference(s.source);
-      headerText = ref ? `${s.label}, ${ref}` : s.label;
-    }
-
-    queue.push({ key: s.key, voice, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
+    const isPsalm = s.key === "Mass_Ps";
 
     const rawSentences = toSentences(stripHtml(s.text));
-    const items = s.key === "Mass_GA" ? expandAcclamation(rawSentences) : rawSentences.map((t) => ({ text: t, gapAfter: null }));
+    let items;
+    if (s.key === "Mass_GA") {
+      items = expandAcclamation(rawSentences);
+    } else if (isPsalm) {
+      items = markPsalmStructure(rawSentences);
+    } else {
+      items = rawSentences.map((t) => ({ text: t, gapAfter: null }));
+    }
+
+    if (isPsalm) {
+      // No announcement — the reader goes straight into the response itself.
+      items.forEach((it, i) => {
+        const isLast = i === items.length - 1;
+        queue.push({
+          key: s.key,
+          voice,
+          text: it.text,
+          isHeader: i === 0,
+          gapAfter: it.gapAfter ?? (isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS),
+        });
+      });
+      return;
+    }
+
+    const headerText =
+      isReading || isGospel
+        ? liturgicalIntroduction(s.source, isGospel)
+        : (() => {
+            const ref = speakableReference(s.source);
+            return ref ? `${s.label}, ${ref}` : s.label;
+          })();
+
+    queue.push({ key: s.key, voice, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
 
     items.forEach((it, i) => {
       const isLast = i === items.length - 1;

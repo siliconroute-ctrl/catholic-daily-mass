@@ -214,6 +214,17 @@ function sentencesToSsmlParts(sentences, { acclamation = false } = {}) {
   return parts;
 }
 
+/** The Responsorial Psalm's response line repeats between verses in
+ *  Universalis' own text — matching the real liturgical structure. Gives
+ *  those repeats extra pause, standing in for the congregation's turn. */
+function sentencesToPsalmSsmlParts(sentences) {
+  if (!sentences.length) return [];
+  const refrainNorm = sentences[0].trim().toLowerCase();
+  return sentences.map((s) =>
+    s.trim().toLowerCase() === refrainNorm ? `${esc(s)}<break time="500ms"/>` : esc(s)
+  );
+}
+
 /** Split SSML parts into requests under the byte limit (same voice). */
 function packRequests(parts, { leadBreak = "", gap = "600ms", tailBreak = "1800ms" }) {
   const requests = [];
@@ -283,20 +294,25 @@ function buildPlan({ day, sections }) {
   for (const s of sections) {
     const isGospel = s.key === "Mass_G";
     const isReading = s.key === "Mass_R1" || s.key === "Mass_R2";
+    const isPsalm = s.key === "Mass_Ps";
     const voice = isGospel ? MALE_VOICE : FEMALE_VOICE;
-
-    const header =
-      isReading || isGospel
-        ? liturgicalIntroduction(s.source, isGospel)
-        : (() => {
-            const ref = speakableReference(s.source);
-            return ref ? `${s.label}, ${ref}` : s.label;
-          })();
-
     const body = toSentences(stripHtml(s.text));
-    const parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: s.key === "Mass_GA" })];
-    if (isReading) parts.push(`<break time="1200ms"/>The Word of the Lord.`);
-    if (isGospel) parts.push(`<break time="1200ms"/>The Gospel of the Lord.`);
+
+    let parts;
+    if (isPsalm) {
+      parts = sentencesToPsalmSsmlParts(body);
+    } else {
+      const header =
+        isReading || isGospel
+          ? liturgicalIntroduction(s.source, isGospel)
+          : (() => {
+              const ref = speakableReference(s.source);
+              return ref ? `${s.label}, ${ref}` : s.label;
+            })();
+      parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: s.key === "Mass_GA" })];
+      if (isReading) parts.push(`<break time="1200ms"/>The Word of the Lord.`);
+      if (isGospel) parts.push(`<break time="1200ms"/>The Gospel of the Lord.`);
+    }
     plan.push({ key: s.key, label: s.label, voice, ssmlRequests: packRequests(parts, { tailBreak: "2200ms" }) });
   }
   return plan;
