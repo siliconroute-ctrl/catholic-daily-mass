@@ -161,6 +161,14 @@ export function normaliseReadings(data) {
     if (s && s.text) {
       sections.push({ key, label, ...s });
       used.add(key);
+    } else if (key === "Mass_Ps") {
+      // The Psalm is present in nearly every Mass. If it's ever missing,
+      // this is worth seeing in the console rather than silently vanishing.
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[Daily Mass] No Responsorial Psalm in today's feed data. Raw keys received:",
+        Object.keys(data)
+      );
     }
   }
 

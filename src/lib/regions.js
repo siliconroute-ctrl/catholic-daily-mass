@@ -2,8 +2,9 @@
  * Universalis regional calendars — confirmed from universalis.com/n-location.htm.
  * calendar: "" means the General Calendar (no prefix in the Universalis URL).
  */
-export const REGIONS = [
-  { name: "General (International)", calendar: "" },
+const GENERAL_OPTION = { name: "General (International)", calendar: "" };
+
+const COUNTRIES = [
   { name: "South Africa", calendar: "africa.safrica" },
   { name: "Nigeria", calendar: "africa.nigeria" },
   { name: "Kenya", calendar: "africa.kenya" },
@@ -34,7 +35,9 @@ export const REGIONS = [
   { name: "New Zealand", calendar: "nz" },
   { name: "Philippines", calendar: "philippines" },
   { name: "United States", calendar: "usa" },
-];
+].sort((a, b) => a.name.localeCompare(b.name));
+
+export const REGIONS = [GENERAL_OPTION, ...COUNTRIES];
 
 const STORAGE_KEY = "cdm-region";
 

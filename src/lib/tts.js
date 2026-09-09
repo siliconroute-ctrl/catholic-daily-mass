@@ -399,8 +399,10 @@ export async function play(sections, handlers = {}) {
       items = rawSentences.map((t) => ({ text: t, gapAfter: null }));
     }
 
-    if (isPsalm) {
-      // No announcement — the reader goes straight into the response itself.
+    const isAcclamation = s.key === "Mass_GA";
+
+    if (isPsalm || isAcclamation) {
+      // No announcement — go straight into the content itself.
       items.forEach((it, i) => {
         const isLast = i === items.length - 1;
         queue.push({

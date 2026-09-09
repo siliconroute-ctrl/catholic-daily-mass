@@ -11,7 +11,7 @@ export default function EntranceScreen({
 }) {
   return (
     <div className="entrance">
-      <HeroArt className="top-banner" photos={EXTERIOR_PHOTOS} alt="A Catholic church" />
+      <HeroArt className="entrance-banner" photos={EXTERIOR_PHOTOS} alt="A Catholic church" />
 
       <div className="entrance-body">
         <h1 className="brand">Catholic Daily Mass</h1>

@@ -271,7 +271,13 @@ function normalise(data) {
   const sections = [];
   for (const [key, label] of SECTION_ORDER) {
     const s = pick(data[key]);
-    if (s && s.text) sections.push({ key, label, ...s });
+    if (s && s.text) {
+      sections.push({ key, label, ...s });
+    } else if (key === "Mass_Ps") {
+      console.warn(
+        `  \u26a0 No Responsorial Psalm in today's feed. Raw keys received: ${Object.keys(data).join(", ")}`
+      );
+    }
   }
   const day = stripHtml(typeof data.day === "string" ? data.day : data.day?.text || "");
   return { day, sections };
@@ -296,21 +302,18 @@ function buildPlan({ day, sections }) {
     const isGospel = s.key === "Mass_G";
     const isReading = s.key === "Mass_R1" || s.key === "Mass_R2";
     const isPsalm = s.key === "Mass_Ps";
+    const isAcclamation = s.key === "Mass_GA";
     const voice = isGospel ? MALE_VOICE : FEMALE_VOICE;
     const body = toSentences(stripHtml(s.text));
 
     let parts;
     if (isPsalm) {
       parts = sentencesToPsalmSsmlParts(body);
+    } else if (isAcclamation) {
+      parts = sentencesToSsmlParts(body, { acclamation: true });
     } else {
-      const header =
-        isReading || isGospel
-          ? liturgicalIntroduction(s.source, isGospel)
-          : (() => {
-              const ref = speakableReference(s.source);
-              return ref ? `${s.label}, ${ref}` : s.label;
-            })();
-      parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: s.key === "Mass_GA" })];
+      const header = liturgicalIntroduction(s.source, isGospel);
+      parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: false })];
       if (isReading) parts.push(`<break time="1200ms"/>The Word of the Lord.`);
       if (isGospel) parts.push(`<break time="1200ms"/>The Gospel of the Lord.`);
     }
