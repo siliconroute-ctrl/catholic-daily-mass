@@ -1,12 +1,12 @@
 {
   "date": "2026-09-09",
   "day": "Wednesday of week 23 in Ordinary Time or Saint Peter Claver",
-  "generatedAt": "2026-09-09T15:27:02.927Z",
+  "generatedAt": "2026-09-09T20:45:58.487Z",
   "voices": {
     "readings": "en-GB-Neural2-A",
     "gospel": "en-GB-Neural2-D"
   },
-  "duration": 212.54399999999998,
+  "duration": 324.768,
   "sections": [
     {
       "key": "bell",
@@ -43,6 +43,30 @@
       "label": "Gospel",
       "start": 149.64,
       "end": 212.54399999999998
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith",
+      "start": 212.54399999999998,
+      "end": 252.95999999999998
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 252.95999999999998,
+      "end": 285.55199999999996
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 285.55199999999996,
+      "end": 312.84
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 312.84,
+      "end": 324.768
     }
   ],
   "stitch": "ffmpeg-concat-filter"
