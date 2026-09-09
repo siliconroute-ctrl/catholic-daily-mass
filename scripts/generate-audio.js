@@ -133,6 +133,56 @@ function speakableReference(source) {
   return s.replace(/[.!?;:]+$/, "").trim();
 }
 
+/** The Church's standard spoken introduction to a scripture reading never
+ *  includes chapter/verse numbers — the lector says "A reading from the
+ *  [Letter/book/prophet] ..." and nothing more specific. Mirrors the
+ *  client-side version in src/lib/tts.js exactly, so the device-voice
+ *  fallback and the HD generated audio always say the same thing. */
+const PAULINE_LETTERS = new Set([
+  "Romans", "Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians",
+  "Thessalonians", "Timothy", "Titus", "Philemon",
+]);
+const CATHOLIC_EPISTLES = new Set(["James", "Peter", "John", "Jude"]);
+const PROPHET_BOOKS = new Set([
+  "Isaiah", "Jeremiah", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah",
+  "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah",
+  "Malachi", "Baruch",
+]);
+
+function liturgicalIntroduction(source, isGospel) {
+  let s = stripHtml(source);
+  if (!s) return "";
+  s = expandBookAbbreviations(s);
+
+  const m = s.match(/^(.+?)\s+\d+:[\d,\-\s]+$/);
+  let bookPhrase = (m ? m[1] : s).trim();
+
+  let ordinalWord = null;
+  bookPhrase = bookPhrase.replace(/^([123])\s+/, (_, d) => {
+    ordinalWord = ORDINALS[d];
+    return "";
+  });
+  const book = bookPhrase.trim();
+
+  if (isGospel) return `A reading from the holy Gospel according to ${book}.`;
+
+  if (book === "Hebrews") return "A reading from the Letter to the Hebrews.";
+  if (book === "Acts") return "A reading from the Acts of the Apostles.";
+  if (book === "Revelation" || book === "Apocalypse") return "A reading from the book of Revelation.";
+  if (PAULINE_LETTERS.has(book)) {
+    return ordinalWord
+      ? `A reading from the ${ordinalWord} Letter of Saint Paul to the ${book}.`
+      : `A reading from the Letter of Saint Paul to the ${book}.`;
+  }
+  if (CATHOLIC_EPISTLES.has(book)) {
+    return ordinalWord
+      ? `A reading from the ${ordinalWord} Letter of Saint ${book}.`
+      : `A reading from the Letter of Saint ${book}.`;
+  }
+  if (PROPHET_BOOKS.has(book)) return `A reading from the book of the prophet ${book}.`;
+  return `A reading from the book of ${book}.`;
+}
+
 const SECTION_ORDER = [
   ["Mass_R1", "First Reading"],
   ["Mass_Ps", "Responsorial Psalm"],
@@ -232,11 +282,20 @@ function buildPlan({ day, sections }) {
 
   for (const s of sections) {
     const isGospel = s.key === "Mass_G";
+    const isReading = s.key === "Mass_R1" || s.key === "Mass_R2";
     const voice = isGospel ? MALE_VOICE : FEMALE_VOICE;
-    const ref = speakableReference(s.source);
-    const header = ref ? `${s.label}, ${ref}` : s.label;
+
+    const header =
+      isReading || isGospel
+        ? liturgicalIntroduction(s.source, isGospel)
+        : (() => {
+            const ref = speakableReference(s.source);
+            return ref ? `${s.label}, ${ref}` : s.label;
+          })();
+
     const body = toSentences(stripHtml(s.text));
     const parts = [esc(header) + `<break time="400ms"/>`, ...sentencesToSsmlParts(body, { acclamation: s.key === "Mass_GA" })];
+    if (isReading) parts.push(`<break time="1200ms"/>The Word of the Lord.`);
     if (isGospel) parts.push(`<break time="1200ms"/>The Gospel of the Lord.`);
     plan.push({ key: s.key, label: s.label, voice, ssmlRequests: packRequests(parts, { tailBreak: "2200ms" }) });
   }

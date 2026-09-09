@@ -125,6 +125,56 @@ function speakableReference(source) {
   return stripTerminalPunctuation(s.replace(/\s+/g, " ").trim());
 }
 
+/** The Church's standard spoken introduction to a scripture reading never
+ *  includes chapter/verse numbers — the lector says "A reading from the
+ *  [Letter/book/prophet] ..." and nothing more specific. This builds that
+ *  exact formula from the printed citation, dropping the numbers entirely.
+ *  (Chapter/verse still SHOWS on screen — only the spoken audio changes.) */
+const PAULINE_LETTERS = new Set([
+  "Romans", "Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians",
+  "Thessalonians", "Timothy", "Titus", "Philemon",
+]);
+const CATHOLIC_EPISTLES = new Set(["James", "Peter", "John", "Jude"]);
+const PROPHET_BOOKS = new Set([
+  "Isaiah", "Jeremiah", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah",
+  "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah",
+  "Malachi", "Baruch",
+]);
+
+function liturgicalIntroduction(source, isGospel) {
+  let s = stripHtml(source);
+  if (!s) return "";
+  s = expandBookAbbreviations(s);
+
+  const m = s.match(/^(.+?)\s+\d+:[\d,\-\s]+$/);
+  let bookPhrase = (m ? m[1] : s).trim();
+
+  let ordinalWord = null;
+  bookPhrase = bookPhrase.replace(/^([123])\s+/, (_, d) => {
+    ordinalWord = ORDINALS[d];
+    return "";
+  });
+  const book = bookPhrase.trim();
+
+  if (isGospel) return `A reading from the holy Gospel according to ${book}.`;
+
+  if (book === "Hebrews") return "A reading from the Letter to the Hebrews.";
+  if (book === "Acts") return "A reading from the Acts of the Apostles.";
+  if (book === "Revelation" || book === "Apocalypse") return "A reading from the book of Revelation.";
+  if (PAULINE_LETTERS.has(book)) {
+    return ordinalWord
+      ? `A reading from the ${ordinalWord} Letter of Saint Paul to the ${book}.`
+      : `A reading from the Letter of Saint Paul to the ${book}.`;
+  }
+  if (CATHOLIC_EPISTLES.has(book)) {
+    return ordinalWord
+      ? `A reading from the ${ordinalWord} Letter of Saint ${book}.`
+      : `A reading from the Letter of Saint ${book}.`;
+  }
+  if (PROPHET_BOOKS.has(book)) return `A reading from the book of the prophet ${book}.`;
+  return `A reading from the book of ${book}.`;
+}
+
 /* ---------- voice selection ---------- */
 
 const MALE_HINTS =
@@ -318,8 +368,16 @@ export async function play(sections, handlers = {}) {
 
   sections.forEach((s) => {
     const voice = map[s.key] || map.default;
-    const ref = speakableReference(s.source);
-    const headerText = ref ? `${s.label}, ${ref}` : s.label;
+    const isReading = s.key === "Mass_R1" || s.key === "Mass_R2";
+    const isGospel = s.key === "Mass_G";
+
+    let headerText;
+    if (isReading || isGospel) {
+      headerText = liturgicalIntroduction(s.source, isGospel);
+    } else {
+      const ref = speakableReference(s.source);
+      headerText = ref ? `${s.label}, ${ref}` : s.label;
+    }
 
     queue.push({ key: s.key, voice, text: headerText, isHeader: true, gapAfter: HEADER_GAP_MS });
 
@@ -337,8 +395,11 @@ export async function play(sections, handlers = {}) {
       });
     });
 
-    if (s.key === "Mass_G") {
-      queue.push({ key: s.key, voice, text: "The Gospel of the Lord", isHeader: false, gapAfter: SECTION_GAP_MS });
+    if (isReading) {
+      queue.push({ key: s.key, voice, text: "The Word of the Lord.", isHeader: false, gapAfter: SECTION_GAP_MS });
+    }
+    if (isGospel) {
+      queue.push({ key: s.key, voice, text: "The Gospel of the Lord.", isHeader: false, gapAfter: SECTION_GAP_MS });
     }
   });
 

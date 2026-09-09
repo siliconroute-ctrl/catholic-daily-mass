@@ -88,8 +88,21 @@ export default function App() {
     setReading(key === "bell" ? null : key);
   };
 
-  const shift = (days) => setDate((d) => new Date(d.getTime() + days * DAY_MS));
-  const isToday = sameDay(date, new Date());
+  const ARCHIVE_DAYS = 3;
+  const today = new Date();
+  const earliestDate = new Date(today.getTime() - ARCHIVE_DAYS * DAY_MS);
+
+  const clampDate = (d) => {
+    if (d.getTime() > today.getTime() && !sameDay(d, today)) return today;
+    if (d.getTime() < earliestDate.getTime() && !sameDay(d, earliestDate)) return earliestDate;
+    return d;
+  };
+
+  const shift = (days) =>
+    setDate((d) => clampDate(new Date(d.getTime() + days * DAY_MS)));
+
+  const isToday = sameDay(date, today);
+  const isEarliestArchiveDay = sameDay(date, earliestDate);
   const year = liturgicalYearLetter(date);
   const weekdayCycle = weekdayCycleNumeral(date);
 
@@ -177,7 +190,12 @@ export default function App() {
       </div>
 
       <nav className="datenav" aria-label="Choose a date">
-        <button className="datenav-btn" onClick={() => shift(-1)} aria-label="Previous day">
+        <button
+          className="datenav-btn"
+          onClick={() => shift(-1)}
+          disabled={isEarliestArchiveDay}
+          aria-label="Previous day"
+        >
           &#8249;
         </button>
         <div className="datenav-center">
@@ -188,10 +206,18 @@ export default function App() {
             </button>
           )}
         </div>
-        <button className="datenav-btn" onClick={() => shift(1)} aria-label="Next day">
+        <button
+          className="datenav-btn"
+          onClick={() => shift(1)}
+          disabled={isToday}
+          aria-label="Next day"
+        >
           &#8250;
         </button>
       </nav>
+      {isEarliestArchiveDay && (
+        <p className="archive-note">Readings are archived for {ARCHIVE_DAYS} days.</p>
+      )}
 
       <main className="missal">
         {state.status === "loading" && <p className="status">Turning the page&hellip;</p>}

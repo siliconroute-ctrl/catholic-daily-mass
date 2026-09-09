@@ -244,6 +244,21 @@ body {
   background: var(--vellum-deep);
 }
 
+.datenav-btn:disabled {
+  color: var(--ink-soft);
+  opacity: 0.35;
+  cursor: default;
+  background: none;
+}
+
+.archive-note {
+  text-align: center;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0.5rem 0 0;
+}
+
 .datenav-center {
   text-align: center;
 }
