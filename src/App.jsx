@@ -8,6 +8,7 @@ import * as tts from "./lib/tts.js";
 import { liturgicalYearLetter, weekdayCycleNumeral } from "./lib/liturgicalYear.js";
 import { loadSavedRegion, saveRegion } from "./lib/regions.js";
 import EntranceScreen from "./components/EntranceScreen.jsx";
+import AboutPage from "./components/AboutPage.jsx";
 import { HeroArt, INTERIOR_PHOTOS } from "./components/EucharistArt.jsx";
 import { fetchAudioManifest } from "./lib/cloudAudio.js";
 
@@ -23,6 +24,7 @@ function sameDay(a, b) {
 
 export default function App() {
   const [entered, setEntered] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [date, setDate] = useState(() => new Date());
   const [region, setRegion] = useState(() => loadSavedRegion());
   const [state, setState] = useState({ status: "loading" });
@@ -158,6 +160,15 @@ export default function App() {
 
   const onStop = () => stopAll();
 
+  if (showAbout) {
+    return (
+      <AboutPage
+        copyrightHtml={state.status === "ready" ? state.data.copyright : ""}
+        onBack={() => setShowAbout(false)}
+      />
+    );
+  }
+
   if (!entered) {
     return (
       <EntranceScreen
@@ -167,6 +178,7 @@ export default function App() {
         region={region}
         onRegionChange={onRegionChange}
         onEnter={() => setEntered(true)}
+        onAbout={() => setShowAbout(true)}
       />
     );
   }
@@ -271,9 +283,6 @@ export default function App() {
       </main>
 
       <footer className="colophon">
-        {state.status === "ready" && state.data.copyright && (
-          <div className="copyright" dangerouslySetInnerHTML={{ __html: state.data.copyright }} />
-        )}
         <p className="attribution">
           Readings provided by{" "}
           <a href="https://www.universalis.com/mass.htm" target="_blank" rel="noreferrer">
@@ -282,6 +291,11 @@ export default function App() {
           .
         </p>
         <p className="ministry">A free ministry of the Catholic Daily Mass community. &#10013;</p>
+        <p className="about-row">
+          <button className="about-link" onClick={() => setShowAbout(true)}>
+            About, copyright &amp; how it works
+          </button>
+        </p>
 
         {maleVoiceMissing && !hdAudio && (
           <details className="voice-notice">

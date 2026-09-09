@@ -10,7 +10,7 @@
  */
 
 const BASE = "https://universalis.com";
-const CACHE_PREFIX = "cdm-readings-";
+const CACHE_PREFIX = "cdm-readings-v2-";
 const CACHE_KEEP = 14; // days of readings kept for offline use
 
 // Universalis calls a fixed global function name from its JSONP script.
@@ -44,16 +44,27 @@ function cacheKey(compact, calendar) {
   return `${CACHE_PREFIX}${calendar || "general"}-${compact}`;
 }
 
+/** A day's data is only worth caching if it looks complete. Nearly every
+ *  Mass has a Gospel and a Psalm; if either is missing, the feed most likely
+ *  glitched, and caching it would freeze that glitch on the device for days
+ *  (this is the likely cause of a Psalm that "never comes back" for one date
+ *  while neighbouring dates are fine). Incomplete days are re-fetched. */
+function looksComplete(data) {
+  return Boolean(data && data.Mass_G && data.Mass_Ps);
+}
+
 function readCache(compact, calendar) {
   try {
     const raw = localStorage.getItem(cacheKey(compact, calendar));
-    return raw ? JSON.parse(raw) : null;
+    const data = raw ? JSON.parse(raw) : null;
+    return looksComplete(data) ? data : null;
   } catch {
     return null;
   }
 }
 
 function writeCache(compact, calendar, data) {
+  if (!looksComplete(data)) return;
   try {
     localStorage.setItem(cacheKey(compact, calendar), JSON.stringify(data));
     pruneCache();

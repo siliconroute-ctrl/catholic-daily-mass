@@ -84,6 +84,7 @@ body {
   max-width: 44rem;
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -107,7 +108,7 @@ body {
 }
 
 .entrance-body {
-  padding: 1.1rem 1.5rem 1.75rem;
+  padding: 0.75rem 1.25rem 1rem;
   text-align: center;
   flex: 1;
   display: flex;
@@ -115,8 +116,58 @@ body {
   align-items: center;
 }
 
-.entrance-region {
-  margin: 1rem 0 1.25rem;
+.entrance-body .brand-sub {
+  margin-top: 0.15rem;
+}
+
+.entrance-body .meta-row {
+  padding-bottom: 0.4rem;
+}
+
+/* Country + Enter grouped together, centred, near the bottom */
+.entrance-controls {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding-bottom: 0.5rem;
+}
+
+.entrance-country {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.entrance-country-label {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.entrance-country select {
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--vellum-deep);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  max-width: 16rem;
+}
+
+.about-link {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 0.9rem;
+  font-style: italic;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
 }
 
 .enter-button {
@@ -130,8 +181,6 @@ body {
   padding: 0.9rem 2.4rem;
   cursor: pointer;
   box-shadow: 0 3px 12px rgba(43, 30, 22, 0.28);
-  margin-top: auto;
-  margin-bottom: 3vh;
 }
 
 .enter-button:hover {
@@ -481,4 +530,49 @@ a:focus-visible {
     right: 1rem;
     height: 66px;
   }
+}
+
+/* About page */
+.about-main {
+  padding-top: 1.25rem;
+}
+
+.about-section {
+  margin-bottom: 1.75rem;
+}
+
+.about-section h2 {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--garnet);
+  margin: 0 0 0.5rem;
+}
+
+.about-section p,
+.about-section li {
+  margin: 0 0 0.6rem;
+}
+
+.about-section ul {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.about-small {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.about-row {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+.about-footer {
+  text-align: center;
+}
+
+.about-footer .enter-button {
+  margin-bottom: 1rem;
 }

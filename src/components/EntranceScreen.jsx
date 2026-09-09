@@ -8,6 +8,7 @@ export default function EntranceScreen({
   region,
   onRegionChange,
   onEnter,
+  onAbout,
 }) {
   return (
     <div className="entrance">
@@ -24,25 +25,26 @@ export default function EntranceScreen({
           </span>
         </div>
 
-        <label className="region-picker entrance-region">
-          <span className="region-picker-label">
-            Select your country
-            <span className="region-picker-hint">
-              (guessed from your device — change anytime)
-            </span>
-          </span>
-          <select value={region} onChange={onRegionChange}>
-            {REGIONS.map((r) => (
-              <option key={r.calendar} value={r.calendar}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="entrance-controls">
+          <label className="entrance-country">
+            <span className="entrance-country-label">Select your country</span>
+            <select value={region} onChange={onRegionChange}>
+              {REGIONS.map((r) => (
+                <option key={r.calendar} value={r.calendar}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <button className="enter-button" onClick={onEnter}>
-          Enter Today&rsquo;s Mass
-        </button>
+          <button className="enter-button" onClick={onEnter}>
+            Enter Today&rsquo;s Mass
+          </button>
+
+          <button className="about-link" onClick={onAbout}>
+            About this app
+          </button>
+        </div>
       </div>
     </div>
   );
