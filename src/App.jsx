@@ -260,7 +260,7 @@ export default function App() {
                 {s.source && (
                   <p className="reading-source" dangerouslySetInnerHTML={{ __html: s.source }} />
                 )}
-                {s.key === "Mass_Ps" && s.paragraphs?.length ? (
+                {s.paragraphs?.length ? (
                   <div className="reading-text">
                     {s.paragraphs.map((p, i) => (
                       <p key={i}>{p}</p>
