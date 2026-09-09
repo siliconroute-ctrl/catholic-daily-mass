@@ -604,3 +604,9 @@ a:focus-visible {
   padding-top: 1rem;
   border-top: 1px solid var(--gold);
 }
+
+/* The final blessing/dismissal — set slightly larger, as fitting words */
+.blessing-text {
+  font-size: 1.12em;
+  font-weight: 600;
+}

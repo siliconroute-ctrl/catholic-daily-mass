@@ -290,7 +290,7 @@ export default function App() {
                   >
                     <h3 className="reading-label">{s.label}</h3>
                     {s.intro && <p className="conclusion-intro">{s.intro}</p>}
-                    <div className="reading-text">
+                    <div className={"reading-text" + (s.key === "concluding-rite" ? " blessing-text" : "")}>
                       <p>{s.text}</p>
                     </div>
                   </section>

@@ -29,9 +29,9 @@
 
 export const PROFESSION_OF_FAITH = {
   key: "creed",
-  label: "Profession of Faith",
+  label: "Profession of Faith \u2014 the Apostles' Creed",
   voiceRole: "assembly",
-  intro: "",
+  intro: "The Profession of Faith.",
   text:
     "I believe in God, the Father almighty, Creator of heaven and earth, " +
     "and in Jesus Christ, his only Son, our Lord, who was conceived by the " +
@@ -66,7 +66,8 @@ export const LORDS_PRAYER = {
   label: "The Lord's Prayer",
   voiceRole: "assembly",
   intro:
-    "At the Savior's command, and formed by divine teaching, we dare to say.",
+    "The Lord's Prayer. At the Savior's command, and formed by divine " +
+    "teaching, we dare to say.",
   text:
     "Our Father, who art in heaven, hallowed be thy name; thy kingdom " +
     "come; thy will be done on earth as it is in heaven. Give us this day " +
