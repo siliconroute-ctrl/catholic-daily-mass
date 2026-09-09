@@ -41,7 +41,10 @@ const OPENING_BLESSING =
 
 function stripHtml(html) {
   const div = document.createElement("div");
-  div.innerHTML = html || "";
+  const padded = String(html || "")
+    .replace(/<br\s*\/?>/gi, "<br/> ")
+    .replace(/<\/(p|div|li)>/gi, "</$1> ");
+  div.innerHTML = padded;
   return (div.textContent || "").replace(/\s+/g, " ").trim();
 }
 

@@ -69,8 +69,8 @@ const compactDate = isoDate.replace(/-/g, "");
 function stripHtml(html) {
   return String(html || "")
     .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<\/p>/gi, " ")
-    .replace(/<[^>]*>/g, "")
+    .replace(/<\/(p|div|li)>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
