@@ -164,6 +164,7 @@ function toParagraphs(html) {
   let s = String(html)
     .replace(/<br\s*\/?>/gi, "\u0001")
     .replace(/<\/(p|div|li)>/gi, "\u0001")
+    .replace(/\r\n|\r|\n/g, "\u0001")
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
