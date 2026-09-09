@@ -1,12 +1,12 @@
 {
   "date": "2026-09-09",
   "day": "Wednesday of week 23 in Ordinary Time or Saint Peter Claver",
-  "generatedAt": "2026-09-09T00:23:52.533Z",
+  "generatedAt": "2026-09-09T08:11:35.788Z",
   "voices": {
     "readings": "en-GB-Neural2-A",
     "gospel": "en-GB-Neural2-D"
   },
-  "duration": 216.67200000000003,
+  "duration": 217.96800000000002,
   "sections": [
     {
       "key": "bell",
@@ -24,25 +24,25 @@
       "key": "Mass_R1",
       "label": "First Reading",
       "start": 15.576,
-      "end": 83.424
+      "end": 84.576
     },
     {
       "key": "Mass_Ps",
       "label": "Responsorial Psalm",
-      "start": 83.424,
-      "end": 136.17600000000002
+      "start": 84.576,
+      "end": 137.328
     },
     {
       "key": "Mass_GA",
       "label": "Gospel Acclamation",
-      "start": 136.17600000000002,
-      "end": 151.41600000000003
+      "start": 137.328,
+      "end": 152.568
     },
     {
       "key": "Mass_G",
       "label": "Gospel",
-      "start": 151.41600000000003,
-      "end": 216.67200000000003
+      "start": 152.568,
+      "end": 217.96800000000002
     }
   ],
   "stitch": "ffmpeg-concat-filter"
