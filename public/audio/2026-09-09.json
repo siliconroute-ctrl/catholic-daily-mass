@@ -1,12 +1,12 @@
 {
   "date": "2026-09-09",
   "day": "Wednesday of week 23 in Ordinary Time or Saint Peter Claver",
-  "generatedAt": "2026-09-09T08:46:01.592Z",
+  "generatedAt": "2026-09-09T10:51:42.341Z",
   "voices": {
     "readings": "en-GB-Neural2-A",
     "gospel": "en-GB-Neural2-D"
   },
-  "duration": 207,
+  "duration": 201.816,
   "sections": [
     {
       "key": "bell",
@@ -36,13 +36,13 @@
       "key": "Mass_GA",
       "label": "Gospel Acclamation",
       "start": 128.784,
-      "end": 144.024
+      "end": 138.84
     },
     {
       "key": "Mass_G",
       "label": "Gospel",
-      "start": 144.024,
-      "end": 207
+      "start": 138.84,
+      "end": 201.816
     }
   ],
   "stitch": "ffmpeg-concat-filter"
