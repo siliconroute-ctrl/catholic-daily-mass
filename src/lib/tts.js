@@ -161,6 +161,7 @@ function liturgicalIntroduction(source, isGospel) {
   let s = stripHtml(source);
   if (!s) return "";
   s = expandBookAbbreviations(s);
+  s = s.replace(/[\u2010\u2011\u2012\u2013\u2014]/g, "-");
 
   const m = s.match(/^(.+?)\s+\d+:[\d,\-\s]+$/);
   let bookPhrase = (m ? m[1] : s).trim();
