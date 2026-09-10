@@ -214,3 +214,42 @@ After that, the nightly schedule takes care of itself.
 - Google Actions runners include `ffmpeg`, so the bell and speech are
   re-encoded into one clean MP3. Locally without ffmpeg, files are simply
   joined (still plays; install ffmpeg for best results).
+
+---
+
+# Daily reflection (Claude API)
+
+A short, quiet devotional reflection on the day's readings, generated once
+per day for everyone (same cost-safe pattern as the audio), and revealed
+behind a button on the reading page. Always labelled as AI-generated, offered
+for personal reflection — never presented as official teaching or a homily.
+
+**Cost:** effectively nothing — a few hundred words per day, once for
+everyone, using a small fast model.
+
+## One-time setup
+
+1. Get an API key at **console.anthropic.com** (Settings → API Keys)
+2. GitHub → your repo → **Settings → Secrets and variables → Actions →
+   New repository secret**
+   Name: `ANTHROPIC_API_KEY` — Value: paste your key
+
+## Test locally first
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+node scripts/generate-reflection.js --dry-run   # zero cost, shows the prompt
+node scripts/generate-reflection.js             # real run for today
+npm run dev                                     # check the button appears
+```
+
+## How it fits in
+
+- Runs automatically as part of the same nightly GitHub Action as the audio.
+- If it ever fails, it does **not** block the audio from being generated —
+  the reflection is a bonus feature, not core.
+- If no reflection exists for a date, the button simply doesn't appear —
+  no error shown to the reader.
+- The prompt deliberately asks for a *gentle, contemplative* reflection,
+  not analysis or doctrine, and explicitly avoids inventing claims not in
+  the text. Worth spot-checking the tone occasionally, especially early on.

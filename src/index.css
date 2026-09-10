@@ -610,3 +610,57 @@ a:focus-visible {
   font-size: 1.12em;
   font-weight: 600;
 }
+
+/* Quiet reflection */
+.reflection-block {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.reflection-toggle {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  background: var(--vellum-deep);
+  color: var(--garnet);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+}
+
+.reflection-panel {
+  text-align: left;
+  background: var(--vellum-deep);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  margin-top: 0.5rem;
+}
+
+.reflection-heading {
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--garnet);
+  margin: 0 0 0.7rem;
+  text-align: center;
+}
+
+.reflection-text {
+  white-space: pre-line;
+  margin: 0 0 1rem;
+}
+
+.reflection-disclaimer {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.reflection-panel .reflection-toggle {
+  display: block;
+  margin: 0 auto;
+}

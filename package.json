@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "generate-audio": "node scripts/generate-audio.js",
-    "list-voices": "node scripts/generate-audio.js --list-voices"
+    "list-voices": "node scripts/generate-audio.js --list-voices",
+    "generate-reflection": "node scripts/generate-reflection.js"
   },
   "dependencies": {
     "react": "^18.3.1",

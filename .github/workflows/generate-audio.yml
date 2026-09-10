@@ -49,14 +49,20 @@ jobs:
       - name: Generate audio
         run: node scripts/generate-audio.js ${{ github.event.inputs.date }}
 
-      - name: Commit and push audio
+      - name: Generate reflection
+        continue-on-error: true # never let this block the audio, which is the core feature
+        run: node scripts/generate-reflection.js ${{ github.event.inputs.date }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Commit and push audio and reflection
         run: |
           git config user.name "daily-mass-bot"
           git config user.email "daily-mass-bot@users.noreply.github.com"
-          git add public/audio
+          git add public/audio public/reflections
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "Daily Mass audio $(date -u +%Y-%m-%d)"
+            git commit -m "Daily Mass audio and reflection $(date -u +%Y-%m-%d)"
             git push
           fi
