@@ -369,9 +369,9 @@ export default function App() {
 
                     {!showReflection ? (
                       <button className="reflection-open" onClick={onOpenReflection}>
-                        A quiet reflection on today&rsquo;s readings,
+                        A quiet reflection for today.
                         <br />
-                        click here.
+                        Please click here.
                       </button>
                     ) : (
                       <div className="reflection-panel">

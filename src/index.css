@@ -635,6 +635,7 @@ a:focus-visible {
   font-weight: 600;
   line-height: 1.4;
   text-align: center;
+  white-space: nowrap;
   background: var(--garnet-soft);
   color: var(--vellum);
   border: none;
