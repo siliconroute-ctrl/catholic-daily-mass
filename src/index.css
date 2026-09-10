@@ -621,16 +621,28 @@ a:focus-visible {
   font-family: "EB Garamond", Georgia, serif;
   font-size: 1rem;
   font-style: italic;
-  line-height: 1.4;
-  text-align: center;
   background: var(--vellum-deep);
   color: var(--garnet);
   border: 1px solid var(--gold);
-  border-radius: 16px;
-  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
   cursor: pointer;
-  max-width: 22rem;
-  margin: 0 auto;
+}
+
+.reflection-open {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: justify;
+  text-align-last: justify;
+  background: var(--vellum-deep);
+  color: var(--garnet);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 0.9rem 1.6rem;
+  cursor: pointer;
+  width: 100%;
   display: block;
 }
 

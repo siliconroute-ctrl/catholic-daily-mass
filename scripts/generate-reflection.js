@@ -38,10 +38,11 @@ const MODEL = process.env.REFLECTION_MODEL || "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 400; // hard cap — a devotional reflection is short by design
 const MAX_REFLECTION_CHARS = 2000; // safety cap before sending to Google TTS
 
-// Same voice as the readings, for a consistent listening experience.
-const VOICE = process.env.REFLECTION_VOICE || "en-GB-Neural2-A";
+// Same voice as the Gospel, at a slower, more contemplative pace than the
+// readings — this is meant to be sat with, not moved through quickly.
+const VOICE = process.env.REFLECTION_VOICE || "en-GB-Neural2-D";
 const LANGUAGE = process.env.REFLECTION_LANGUAGE || "en-GB";
-const SPEAKING_RATE = 0.92;
+const SPEAKING_RATE = 0.85;
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
@@ -199,9 +200,9 @@ function toSentences(text) {
 function buildReflectionSsml(text) {
   const sentences = toSentences(text);
   const parts = sentences.map(
-    (s, i) => esc(s) + (i < sentences.length - 1 ? '<break time="500ms"/>' : "")
+    (s, i) => esc(s) + (i < sentences.length - 1 ? '<break time="650ms"/>' : "")
   );
-  return `<speak>${parts.join(" ")}<break time="600ms"/></speak>`;
+  return `<speak>${parts.join(" ")}<break time="700ms"/></speak>`;
 }
 
 async function synthesizeReflectionAudio(text) {
