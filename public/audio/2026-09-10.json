@@ -1,0 +1,73 @@
+{
+  "date": "2026-09-10",
+  "day": "Thursday of week 23 in Ordinary Time",
+  "generatedAt": "2026-09-10T00:22:59.767Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 394.29599999999994,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 15.576,
+      "end": 106.99199999999999
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 106.99199999999999,
+      "end": 162.23999999999998
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 162.23999999999998,
+      "end": 175.55999999999997
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 175.55999999999997,
+      "end": 277.91999999999996
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 277.91999999999996,
+      "end": 321.14399999999995
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 321.14399999999995,
+      "end": 353.73599999999993
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 353.73599999999993,
+      "end": 382.36799999999994
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 382.36799999999994,
+      "end": 394.29599999999994
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
