@@ -337,18 +337,22 @@ export default function App() {
             {state.data.sections.length > 0 && (
               <>
                 <hr className="conclusion-divider" />
-                {MASS_CONCLUSION_SECTIONS.slice(0, 3).map((s) => (
+                {MASS_CONCLUSION_SECTIONS.map((s) => (
                   <section
                     key={s.key}
                     className={"reading conclusion" + (reading === s.key ? " being-read" : "")}
                   >
                     <h3 className="reading-label">{s.label}</h3>
                     {s.intro && <p className="conclusion-intro">{s.intro}</p>}
-                    <div className="reading-text">
+                    <div className={"reading-text" + (s.key === "concluding-rite" ? " blessing-text" : "")}>
                       <p>{s.text}</p>
                     </div>
                   </section>
                 ))}
+                <p className="conclusion-note">
+                  This app does not include the Eucharistic Prayer, as it can
+                  only be validly celebrated by an ordained priest at Mass.
+                </p>
 
                 {reflection && (
                   <div className="reflection-block">
@@ -390,23 +394,6 @@ export default function App() {
                     )}
                   </div>
                 )}
-
-                {MASS_CONCLUSION_SECTIONS.slice(3).map((s) => (
-                  <section
-                    key={s.key}
-                    className={"reading conclusion" + (reading === s.key ? " being-read" : "")}
-                  >
-                    <h3 className="reading-label">{s.label}</h3>
-                    {s.intro && <p className="conclusion-intro">{s.intro}</p>}
-                    <div className={"reading-text" + (s.key === "concluding-rite" ? " blessing-text" : "")}>
-                      <p>{s.text}</p>
-                    </div>
-                  </section>
-                ))}
-                <p className="conclusion-note">
-                  This app does not include the Eucharistic Prayer, as it can
-                  only be validly celebrated by an ordained priest at Mass.
-                </p>
               </>
             )}
           </>
