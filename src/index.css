@@ -621,12 +621,17 @@ a:focus-visible {
   font-family: "EB Garamond", Georgia, serif;
   font-size: 1rem;
   font-style: italic;
+  line-height: 1.4;
+  text-align: center;
   background: var(--vellum-deep);
   color: var(--garnet);
   border: 1px solid var(--gold);
-  border-radius: 999px;
-  padding: 0.7rem 1.4rem;
+  border-radius: 16px;
+  padding: 0.8rem 1.6rem;
   cursor: pointer;
+  max-width: 22rem;
+  margin: 0 auto;
+  display: block;
 }
 
 .reflection-panel {
@@ -663,4 +668,18 @@ a:focus-visible {
 .reflection-panel .reflection-toggle {
   display: block;
   margin: 0 auto;
+}
+
+.reflection-listen {
+  display: block;
+  margin: 0 auto 1rem;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--garnet);
+  color: var(--vellum);
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  cursor: pointer;
 }

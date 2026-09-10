@@ -27,6 +27,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import textToSpeech from "@google-cloud/text-to-speech";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -35,6 +36,12 @@ const KEEP_DAYS = 14;
 
 const MODEL = process.env.REFLECTION_MODEL || "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 400; // hard cap — a devotional reflection is short by design
+const MAX_REFLECTION_CHARS = 2000; // safety cap before sending to Google TTS
+
+// Same voice as the readings, for a consistent listening experience.
+const VOICE = process.env.REFLECTION_VOICE || "en-GB-Neural2-A";
+const LANGUAGE = process.env.REFLECTION_LANGUAGE || "en-GB";
+const SPEAKING_RATE = 0.92;
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
@@ -166,10 +173,46 @@ function prune() {
   if (!fs.existsSync(OUT_DIR)) return;
   const cutoff = Date.now() - KEEP_DAYS * 86400000;
   for (const f of fs.readdirSync(OUT_DIR)) {
-    const m = f.match(/^(\d{4}-\d{2}-\d{2})\.json$/);
+    const m = f.match(/^(\d{4}-\d{2}-\d{2})\.(json|mp3)$/);
     if (!m) continue;
     if (new Date(m[1]).getTime() < cutoff) fs.unlinkSync(path.join(OUT_DIR, f));
   }
+}
+
+function esc(s) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function toSentences(text) {
+  const raw = text
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9\u2018\u201C])/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return raw.length ? raw : [text];
+}
+
+function buildReflectionSsml(text) {
+  const sentences = toSentences(text);
+  const parts = sentences.map(
+    (s, i) => esc(s) + (i < sentences.length - 1 ? '<break time="500ms"/>' : "")
+  );
+  return `<speak>${parts.join(" ")}<break time="600ms"/></speak>`;
+}
+
+async function synthesizeReflectionAudio(text) {
+  const client = new textToSpeech.TextToSpeechClient();
+  const ssml = buildReflectionSsml(text);
+  const [resp] = await client.synthesizeSpeech({
+    input: { ssml },
+    voice: { languageCode: LANGUAGE, name: VOICE },
+    audioConfig: { audioEncoding: "MP3", speakingRate: SPEAKING_RATE, pitch: 0 },
+  });
+  return Buffer.from(resp.audioContent);
 }
 
 // ---------- main ----------
@@ -203,6 +246,18 @@ function prune() {
 
   console.log("  Calling Claude …");
   const reflection = await callClaude(userPrompt);
+  console.log(`  Reflection length: ${reflection.length} characters`);
+
+  if (reflection.length > MAX_REFLECTION_CHARS) {
+    throw new Error(
+      `Refusing to synthesise: reflection is ${reflection.length} characters, exceeding the safety cap of ${MAX_REFLECTION_CHARS}.`
+    );
+  }
+
+  console.log("  Synthesising audio with Google Cloud TTS …");
+  const audioBuffer = await synthesizeReflectionAudio(reflection);
+  const mp3Path = path.join(OUT_DIR, `${isoDate}.mp3`);
+  fs.writeFileSync(mp3Path, audioBuffer);
 
   const outPath = path.join(OUT_DIR, `${isoDate}.json`);
   fs.writeFileSync(
@@ -212,8 +267,10 @@ function prune() {
         date: isoDate,
         day: readings.day,
         model: MODEL,
+        voice: VOICE,
         generatedAt: new Date().toISOString(),
         text: reflection,
+        hasAudio: true,
       },
       null,
       2
@@ -221,7 +278,8 @@ function prune() {
   );
   prune();
 
-  console.log(`\nDone: ${path.relative(ROOT, outPath)}`);
+  const kb = (audioBuffer.length / 1024).toFixed(0);
+  console.log(`\nDone: ${path.relative(ROOT, outPath)} and ${path.relative(ROOT, mp3Path)} (${kb} KB)`);
   console.log(`\n--- Reflection ---\n${reflection}\n`);
 })().catch((err) => {
   console.error("\nFAILED:", err.message);

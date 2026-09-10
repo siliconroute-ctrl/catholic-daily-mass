@@ -366,6 +366,36 @@ export function isSupported() {
   return "speechSynthesis" in window;
 }
 
+/** Reads a standalone piece of plain text aloud — used for the reflection.
+ *  Reuses the same voice choice, pacing, and sentence-by-sentence safety
+ *  net (Android GC/watchdog fixes) as the main readings, without needing
+ *  the section/liturgical structure `play()` expects. */
+export async function playPlainText(text, handlers = {}) {
+  stop();
+  onProgress = handlers.onProgress || null;
+  onDone = handlers.onDone || null;
+
+  await ensureVoicesLoaded();
+  const map = voiceMap();
+  queue = [];
+
+  const sentences = toSentences(text);
+  sentences.forEach((sentence, i) => {
+    const isLast = i === sentences.length - 1;
+    queue.push({
+      key: "reflection",
+      voice: map.Mass_R1,
+      text: sentence,
+      isHeader: i === 0,
+      gapAfter: isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS,
+    });
+  });
+
+  current = -1;
+  active = true;
+  speakNext();
+}
+
 export async function play(sections, handlers = {}) {
   stop();
   onProgress = handlers.onProgress || null;

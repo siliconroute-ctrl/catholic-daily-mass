@@ -253,3 +253,19 @@ npm run dev                                     # check the button appears
 - The prompt deliberately asks for a *gentle, contemplative* reflection,
   not analysis or doctrine, and explicitly avoids inventing claims not in
   the text. Worth spot-checking the tone occasionally, especially early on.
+
+## Reflection now includes HD audio (Google Cloud TTS)
+
+The daily reflection is now spoken in the same voice quality as the
+readings (Google Cloud TTS), not the device's built-in voice — avoiding
+the jarring quality drop between a polished HD reading and a robotic
+device voice for the reflection right after it.
+
+- Uses the **same voice** as the readings (`en-GB-Neural2-A` by default)
+- Generated as part of the same nightly job — no separate setup needed
+  beyond the `ANTHROPIC_API_KEY` and existing `GOOGLE_CREDENTIALS_JSON`
+  secrets already configured
+- If reflection generation fails for any reason, it does not block the
+  audio — the reflection (text and audio) simply won't appear that day
+- Tapping the reflection button reveals the text **and** starts playback
+  together, in one action
