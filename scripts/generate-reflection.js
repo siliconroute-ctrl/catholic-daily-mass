@@ -103,6 +103,10 @@ Length: 2 to 3 short paragraphs, about 150 to 220 words total.
 Ending: close with a brief, gentle invitation to prayer or reflection — an invitation, never a \
 directive or a command.
 
+Formatting: write in plain prose only. Do not use markdown — no asterisks, no bold, no italics, \
+no bullet points. This text is displayed as plain text, so any formatting symbols would appear \
+as literal characters on the page.
+
 Output ONLY the reflection text itself. No heading, no title, no "Reflection:" label, no sign-off.`;
 
 function buildUserPrompt(readings) {
@@ -138,12 +142,23 @@ async function callClaude(userPrompt) {
     throw new Error(`Anthropic API HTTP ${res.status}: ${body.slice(0, 300)}`);
   }
   const data = await res.json();
-  const text = (data.content || [])
+  let text = (data.content || [])
     .filter((c) => c.type === "text")
     .map((c) => c.text)
     .join("\n")
     .trim();
   if (!text) throw new Error("Empty response from Anthropic API.");
+
+  // Safety net: the prompt asks for plain prose, but strip stray markdown
+  // anyway (asterisks, underscores, bullets) since it displays as literal
+  // characters otherwise.
+  text = text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/(?<!\w)_(.+?)_(?!\w)/g, "$1")
+    .replace(/^[-*]\s+/gm, "");
+
   return text;
 }
 
