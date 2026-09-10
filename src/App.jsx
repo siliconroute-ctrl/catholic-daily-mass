@@ -371,7 +371,7 @@ export default function App() {
                       <button className="reflection-open" onClick={onOpenReflection}>
                         A quiet reflection on today&rsquo;s readings,
                         <br />
-                        click to read and listen
+                        click here.
                       </button>
                     ) : (
                       <div className="reflection-panel">
