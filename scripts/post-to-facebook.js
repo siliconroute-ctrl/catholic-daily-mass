@@ -46,11 +46,11 @@ const GRAPH_VERSION = "v21.0";
 // A handful of candidate backdrop images to try, in order — same idea as
 // the app's own photo-pool fallback. If none exist, a plain generated
 // backdrop is used instead so this can never hard-fail for a cosmetic reason.
-const BACKDROP_CANDIDATES = [
-  "church-interior-1.jpg", "church-interior-2.jpg", "church-interior-3.jpg",
-  "church-1.jpg", "church-2.jpg", "church-3.jpg",
-  "icon-512.png",
-];
+// Uses the SAME photo pool the app itself draws from (church-*.jpg and
+// church-interior-*.jpg in public/) — one pool, shared by both the app and
+// Facebook, so there's only ever one set of photos to maintain. Picks one
+// at random each run, rather than always favouring the same photo.
+const BACKDROP_PATTERN = /^church(-interior)?-\d+\.(jpe?g|png)$/i;
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
@@ -124,11 +124,20 @@ function buildMessage({ day, gospel, reflectionText }) {
 
 // ---------- build the video (background image + audio) ----------
 function findBackdrop() {
-  for (const name of BACKDROP_CANDIDATES) {
-    const p = path.join(PUBLIC_DIR, name);
-    if (fs.existsSync(p)) return p;
+  let files;
+  try {
+    files = fs.readdirSync(PUBLIC_DIR);
+  } catch {
+    return null;
   }
-  return null;
+  const pool = files.filter((f) => BACKDROP_PATTERN.test(f));
+  if (pool.length === 0) {
+    const iconPath = path.join(PUBLIC_DIR, "icon-512.png");
+    return fs.existsSync(iconPath) ? iconPath : null;
+  }
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  console.log(`  Backdrop chosen at random: ${chosen} (from a pool of ${pool.length})`);
+  return path.join(PUBLIC_DIR, chosen);
 }
 
 function hasFfmpeg() {
