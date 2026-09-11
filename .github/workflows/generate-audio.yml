@@ -22,7 +22,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -66,3 +66,10 @@ jobs:
             git commit -m "Daily Mass audio and reflection $(date -u +%Y-%m-%d)"
             git push
           fi
+
+      - name: Post to Facebook
+        continue-on-error: true # never let this affect audio/reflection generation
+        run: node scripts/post-to-facebook.js ${{ github.event.inputs.date }}
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}

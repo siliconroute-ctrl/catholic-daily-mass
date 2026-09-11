@@ -269,3 +269,50 @@ device voice for the reflection right after it.
   audio — the reflection (text and audio) simply won't appear that day
 - Tapping the reflection button reveals the text **and** starts playback
   together, in one action
+
+---
+
+# Daily Facebook posting
+
+Posts once a day to the CatholicMass Facebook Page: the day's Gospel text,
+the quiet reflection (if generated), and a link to the app — with the day's
+HD audio attached as a video (Facebook has no native "attach audio" post
+type, so a static-image + audio video is the standard way anyone shares
+audio content there).
+
+## One-time setup
+
+1. Add two GitHub secrets (Settings → Secrets and variables → Actions):
+   - `FB_PAGE_ID` — your Page ID (e.g. `513539085467916`)
+   - `FB_PAGE_TOKEN` — the System User access token generated in Meta
+     Business Suite (Users → System Users → Dailymassbot → Generate token)
+
+## Test locally first
+
+```bash
+export FB_PAGE_ID="513539085467916"
+export FB_PAGE_TOKEN="your-token"
+
+# zero-cost, zero-risk: builds the message + video, posts nothing
+node scripts/post-to-facebook.js --dry-run
+
+# real post
+node scripts/post-to-facebook.js
+```
+
+The dry run saves the built video locally (`.fb-post-<date>.mp4`) so you can
+watch it before ever posting for real.
+
+## How it fits in
+
+- Runs automatically as the last step of the nightly job, after audio and
+  reflection generation.
+- Requires the day's audio file to already exist — refuses to run
+  otherwise (run order matters: audio → reflection → Facebook post).
+- A missing reflection isn't fatal — the post is just built without that
+  section.
+- Uses `graph-video.facebook.com`, the endpoint for uploading videos to a
+  Page, since Facebook has no plain-audio post type.
+- Backdrop image: tries your church interior/exterior photos first, falls
+  back to the app icon, falls back to a plain generated garnet backdrop —
+  never fails purely for lacking a photo.

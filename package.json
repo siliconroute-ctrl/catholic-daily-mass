@@ -9,10 +9,10 @@
     "preview": "vite preview",
     "generate-audio": "node scripts/generate-audio.js",
     "list-voices": "node scripts/generate-audio.js --list-voices",
-    "generate-reflection": "node scripts/generate-reflection.js"
+    "generate-reflection": "node scripts/generate-reflection.js",
+    "post-to-facebook": "node scripts/post-to-facebook.js"
   },
   "dependencies": {
-    "@vercel/analytics": "^2.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
