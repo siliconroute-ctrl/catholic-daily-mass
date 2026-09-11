@@ -13,6 +13,7 @@ import { HeroArt, INTERIOR_PHOTOS } from "./components/EucharistArt.jsx";
 import { fetchAudioManifest, isoDateKey } from "./lib/cloudAudio.js";
 import { fetchReflection } from "./lib/reflection.js";
 import { MASS_CONCLUSION_SECTIONS } from "./lib/massConclusion.js";
+import { Analytics } from "@vercel/analytics/react";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -217,24 +218,30 @@ export default function App() {
 
   if (showAbout) {
     return (
-      <AboutPage
-        copyrightHtml={state.status === "ready" ? state.data.copyright : ""}
-        onBack={() => setShowAbout(false)}
-      />
+      <>
+        <AboutPage
+          copyrightHtml={state.status === "ready" ? state.data.copyright : ""}
+          onBack={() => setShowAbout(false)}
+        />
+        <Analytics />
+      </>
     );
   }
 
   if (!entered) {
     return (
-      <EntranceScreen
-        dateLabel={displayDate(date)}
-        year={year}
-        weekdayCycle={weekdayCycle}
-        region={region}
-        onRegionChange={onRegionChange}
-        onEnter={() => setEntered(true)}
-        onAbout={() => setShowAbout(true)}
-      />
+      <>
+        <EntranceScreen
+          dateLabel={displayDate(date)}
+          year={year}
+          weekdayCycle={weekdayCycle}
+          region={region}
+          onRegionChange={onRegionChange}
+          onEnter={() => setEntered(true)}
+          onAbout={() => setShowAbout(true)}
+        />
+        <Analytics />
+      </>
     );
   }
 
@@ -466,6 +473,7 @@ export default function App() {
           <span className="voice-source">{hdAudio ? "HD voice" : "Device voice"}</span>
         </div>
       )}
+      <Analytics />
     </div>
   );
 }
