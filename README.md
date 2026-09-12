@@ -316,3 +316,81 @@ watch it before ever posting for real.
 - Backdrop image: tries your church interior/exterior photos first, falls
   back to the app icon, falls back to a plain generated garnet backdrop —
   never fails purely for lacking a photo.
+
+---
+
+# Daily YouTube posting
+
+Uploads the exact same video already built for Facebook (backdrop photo +
+HD audio) to your YouTube channel, with a proper YouTube-style title, a
+fuller description (Gospel text, reflection, chapter timestamps, links),
+and tags. The video is only built ONCE per night (`build-social-video.js`)
+and reused by both platforms — never encoded twice.
+
+**Quota note (2026):** YouTube moved video uploads to their own dedicated
+daily allowance of 100 uploads/day, completely separate from the general
+API quota. One upload a night is nowhere near that limit.
+
+**Honest content-policy note:** YouTube has become stricter about
+"low-effort" or repetitive content for monetization purposes specifically.
+A daily static-image-plus-audio video, always in the same format, may face
+extra scrutiny if you pursue monetization there — worth being realistic
+about, separate from whether it's fine to simply post (it is).
+
+## One-time setup (a genuine multi-step process — take it slowly)
+
+1. Go to **console.cloud.google.com**
+2. Create a project (or reuse your existing "daily-mass-text-to-speech"
+   project from the audio setup — either works)
+3. Enable the **YouTube Data API v3** for that project
+4. Go to **APIs & Services → Credentials → Create Credentials → OAuth
+   client ID**
+5. If prompted, configure the consent screen first:
+   - User type: **External**
+   - Publishing status: **Testing** (avoids Google's app review process
+     entirely — fine since only you will ever authorize this)
+   - Add your own Google account as a **test user**
+6. Application type: **Desktop app** (this matters — it's what allows the
+   local redirect the setup script uses)
+7. Copy the **Client ID** and **Client Secret** shown
+
+**Then, run the one-time authorization locally:**
+
+```bash
+export YT_CLIENT_ID="....apps.googleusercontent.com"
+export YT_CLIENT_SECRET="...."
+node scripts/youtube-auth-setup.js
+```
+
+This opens a URL for you to visit — sign in with the Google account tied
+to your YouTube channel, click Allow, and the script will print a
+**refresh token** in your terminal.
+
+**Save three GitHub secrets:**
+- `YT_CLIENT_ID`
+- `YT_CLIENT_SECRET`
+- `YT_REFRESH_TOKEN` (from the setup script above)
+
+You only ever run `youtube-auth-setup.js` once. The refresh token doesn't
+expire as long as it's used at least once every 6 months — the nightly
+job uses it every night, so it never will.
+
+## Test locally first
+
+```bash
+export YT_CLIENT_ID="...."
+export YT_CLIENT_SECRET="...."
+export YT_REFRESH_TOKEN="...."
+node scripts/build-social-video.js --dry-run 2>/dev/null; node scripts/build-social-video.js
+node scripts/post-to-youtube.js --dry-run   # zero risk, prints title/description/tags
+node scripts/post-to-youtube.js             # real upload
+```
+
+## How it fits in
+
+- Runs as the last step of the nightly job, after the Facebook post.
+- Uploads default to **public** — change `PRIVACY_STATUS` in
+  `post-to-youtube.js` to `"unlisted"` if you'd rather review each video
+  before it goes live.
+- A YouTube failure never affects Facebook, the audio, or the reflection
+  — each platform step is independent.

@@ -67,9 +67,21 @@ jobs:
             git push
           fi
 
-      - name: Post to Facebook
+      - name: Build social video (shared by Facebook and YouTube)
         continue-on-error: true # never let this affect audio/reflection generation
+        run: node scripts/build-social-video.js ${{ github.event.inputs.date }}
+
+      - name: Post to Facebook
+        continue-on-error: true # never let one platform's failure affect the other
         run: node scripts/post-to-facebook.js ${{ github.event.inputs.date }}
         env:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+
+      - name: Post to YouTube
+        continue-on-error: true # never let one platform's failure affect the other
+        run: node scripts/post-to-youtube.js ${{ github.event.inputs.date }}
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

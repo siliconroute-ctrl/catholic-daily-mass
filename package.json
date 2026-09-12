@@ -10,7 +10,10 @@
     "generate-audio": "node scripts/generate-audio.js",
     "list-voices": "node scripts/generate-audio.js --list-voices",
     "generate-reflection": "node scripts/generate-reflection.js",
-    "post-to-facebook": "node scripts/post-to-facebook.js"
+    "post-to-facebook": "node scripts/post-to-facebook.js",
+    "youtube-auth-setup": "node scripts/youtube-auth-setup.js",
+    "build-social-video": "node scripts/build-social-video.js",
+    "post-to-youtube": "node scripts/post-to-youtube.js"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -21,6 +24,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "music-metadata": "^11.15.0",
     "vite": "^5.4.0",
-    "vite-plugin-pwa": "^0.20.0"
+    "vite-plugin-pwa": "^0.20.0",
+    "googleapis": "^180.0.0"
   }
 }
