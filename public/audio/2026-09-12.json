@@ -1,0 +1,73 @@
+{
+  "date": "2026-09-12",
+  "day": "Saturday of week 23 in Ordinary Time or The Most Holy Name of Mary or Saturday memorial of the Blessed Virgin Mary",
+  "generatedAt": "2026-09-12T00:25:48.971Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 321.71999999999997,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 15.576,
+      "end": 83.63999999999999
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 83.63999999999999,
+      "end": 116.59199999999998
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 116.59199999999998,
+      "end": 131.64
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 131.64,
+      "end": 205.344
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 205.344,
+      "end": 248.56799999999998
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 248.56799999999998,
+      "end": 281.15999999999997
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 281.15999999999997,
+      "end": 309.792
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 309.792,
+      "end": 321.71999999999997
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
