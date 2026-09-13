@@ -29,6 +29,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { socialVideoPath } from "./build-social-video.js";
+import { fetchUniversalisData } from "./lib/fetch-universalis.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -70,15 +71,7 @@ function stripHtml(html) {
 
 async function fetchReadings() {
   const url = `https://universalis.com/${compactDate}/jsonpmass.js`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "CatholicDailyMass-FacebookPoster/1.0 (+contact via app)" },
-  });
-  if (!res.ok) throw new Error(`Universalis HTTP ${res.status} for ${url}`);
-  const js = await res.text();
-  const start = js.indexOf("(");
-  const end = js.lastIndexOf(")");
-  if (start < 0 || end < 0) throw new Error("Unexpected JSONP format from Universalis");
-  return JSON.parse(js.slice(start + 1, end));
+  return fetchUniversalisData(url, "CatholicDailyMass-FacebookPoster/1.0 (+contact via app)");
 }
 
 function pick(v) {

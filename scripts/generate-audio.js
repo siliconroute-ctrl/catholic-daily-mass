@@ -31,6 +31,8 @@ import { fileURLToPath } from "node:url";
 import textToSpeech from "@google-cloud/text-to-speech";
 import { parseBuffer } from "music-metadata";
 import { MASS_CONCLUSION_SECTIONS } from "../src/lib/massConclusion.js";
+import { MASS_OPENING_SECTIONS } from "../src/lib/massOpening.js";
+import { fetchUniversalisData } from "./lib/fetch-universalis.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -255,15 +257,7 @@ function packRequests(parts, { leadBreak = "", gap = "600ms", tailBreak = "1800m
 // ---------- fetch readings ----------
 async function fetchReadings() {
   const url = `https://universalis.com/${compactDate}/jsonpmass.js`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "CatholicDailyMass-AudioGenerator/1.0 (+contact via app)" },
-  });
-  if (!res.ok) throw new Error(`Universalis HTTP ${res.status} for ${url}`);
-  const js = await res.text();
-  const start = js.indexOf("(");
-  const end = js.lastIndexOf(")");
-  if (start < 0 || end < 0) throw new Error("Unexpected JSONP format from Universalis");
-  return JSON.parse(js.slice(start + 1, end));
+  return fetchUniversalisData(url, "CatholicDailyMass-AudioGenerator/1.0 (+contact via app)");
 }
 
 function normalise(data) {
@@ -298,6 +292,27 @@ function buildPlan({ day, sections }) {
       tailBreak: "1800ms",
     }),
   });
+
+  // Penitential Act — invitation and Confiteor need different voices
+  // (priest, then assembly), so this is two plan entries, not one.
+  for (const s of MASS_OPENING_SECTIONS) {
+    if (s.intro) {
+      const introVoice = s.introVoiceRole === "priest" ? MALE_VOICE : FEMALE_VOICE;
+      plan.push({
+        key: `${s.key}-intro`,
+        label: `${s.label} (Invitation)`,
+        voice: introVoice,
+        ssmlRequests: packRequests(sentencesToSsmlParts(toSentences(s.intro)), { tailBreak: "900ms" }),
+      });
+    }
+    const mainVoice = s.voiceRole === "priest" ? MALE_VOICE : FEMALE_VOICE;
+    plan.push({
+      key: s.key,
+      label: s.label,
+      voice: mainVoice,
+      ssmlRequests: packRequests(sentencesToSsmlParts(toSentences(s.text)), { tailBreak: "2200ms" }),
+    });
+  }
 
   for (const s of sections) {
     const isGospel = s.key === "Mass_G";

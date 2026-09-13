@@ -13,6 +13,7 @@ import { HeroArt, INTERIOR_PHOTOS } from "./components/EucharistArt.jsx";
 import { fetchAudioManifest, isoDateKey } from "./lib/cloudAudio.js";
 import { fetchReflection } from "./lib/reflection.js";
 import { MASS_CONCLUSION_SECTIONS } from "./lib/massConclusion.js";
+import { MASS_OPENING_SECTIONS } from "./lib/massOpening.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -301,6 +302,20 @@ export default function App() {
         {state.status === "ready" && (
           <>
             {state.data.day && <h2 className="feast">{state.data.day}</h2>}
+
+            {state.data.sections.length > 0 &&
+              MASS_OPENING_SECTIONS.map((s) => (
+                <section
+                  key={s.key}
+                  className={"reading conclusion" + (reading === s.key ? " being-read" : "")}
+                >
+                  <h3 className="reading-label">{s.label}</h3>
+                  {s.intro && <p className="conclusion-intro">{s.intro}</p>}
+                  <div className="reading-text">
+                    <p>{s.text}</p>
+                  </div>
+                </section>
+              ))}
 
             {state.data.sections.map((s) => (
               <section

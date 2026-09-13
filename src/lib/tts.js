@@ -18,6 +18,7 @@
  */
 import { ringBell } from "./bell.js";
 import { MASS_CONCLUSION_SECTIONS } from "./massConclusion.js";
+import { MASS_OPENING_SECTIONS } from "./massOpening.js";
 
 let queue = [];
 let current = -1;
@@ -414,6 +415,25 @@ export async function play(sections, handlers = {}) {
       isHeader: i === 0,
       key: "blessing",
       gapAfter: i === arr.length - 1 ? SECTION_GAP_MS : SENTENCE_GAP_MS,
+    });
+  });
+
+  // Penitential Act — invitation in the priest's voice, then the Confiteor
+  // prayed by all together (assembly voice), between the Greeting and the
+  // readings.
+  MASS_OPENING_SECTIONS.forEach((s) => {
+    const introVoice = s.introVoiceRole === "priest" ? map.Mass_G : map.Mass_R1;
+    const mainVoice = s.voiceRole === "priest" ? map.Mass_G : map.Mass_R1;
+    let firstPushed = false;
+    const pushItem = (voice, text, gapAfter) => {
+      queue.push({ key: s.key, voice, text, isHeader: !firstPushed, gapAfter });
+      firstPushed = true;
+    };
+    if (s.intro) pushItem(introVoice, s.intro, HEADER_GAP_MS);
+    const sentences = toSentences(s.text);
+    sentences.forEach((sentence, i) => {
+      const isLast = i === sentences.length - 1;
+      pushItem(mainVoice, sentence, isLast ? SECTION_GAP_MS : SENTENCE_GAP_MS);
     });
   });
 
