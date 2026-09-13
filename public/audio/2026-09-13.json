@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-13",
+  "day": "24th Sunday in Ordinary Time",
+  "generatedAt": "2026-09-13T11:29:26.693Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 450.168,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "penitential-act-intro",
+      "label": "Penitential Act (Invitation)",
+      "start": 15.576,
+      "end": 23.592
+    },
+    {
+      "key": "penitential-act",
+      "label": "Penitential Act",
+      "start": 23.592,
+      "end": 50.064
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 50.064,
+      "end": 107.49600000000001
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 107.49600000000001,
+      "end": 173.25600000000003
+    },
+    {
+      "key": "Mass_R2",
+      "label": "Second Reading",
+      "start": 173.25600000000003,
+      "end": 199.99200000000002
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 199.99200000000002,
+      "end": 214.17600000000002
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 214.17600000000002,
+      "end": 333.79200000000003
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 333.79200000000003,
+      "end": 377.016
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 377.016,
+      "end": 409.608
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 409.608,
+      "end": 438.24
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 438.24,
+      "end": 450.168
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
