@@ -10,3 +10,6 @@ serviceAccountKey.json
 daily-mass-text-to-speech-*.json
 gcp-key.json
 public/audio/.tmp-*
+
+# Generated social-video build artifact (produced by build-social-video.js)
+.social-video-*.mp4
