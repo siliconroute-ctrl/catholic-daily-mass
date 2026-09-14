@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-14",
+  "day": "The Exaltation of the Holy Cross ‐ Feast",
+  "generatedAt": "2026-09-14T00:18:54.068Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 338.664,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "penitential-act-intro",
+      "label": "Penitential Act (Invitation)",
+      "start": 15.576,
+      "end": 23.592
+    },
+    {
+      "key": "penitential-act",
+      "label": "Penitential Act",
+      "start": 23.592,
+      "end": 50.064
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 50.064,
+      "end": 108
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 108,
+      "end": 163.824
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 163.824,
+      "end": 178.68
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 178.68,
+      "end": 222.288
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 222.288,
+      "end": 265.512
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 265.512,
+      "end": 298.104
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 298.104,
+      "end": 326.736
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 326.736,
+      "end": 338.664
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
