@@ -1,0 +1,59 @@
+name: Post daily readings to Facebook and YouTube
+# Builds the day's readings video (backdrop photo + the day's HD reading
+# audio, already generated and committed by generate-audio.yml) and posts
+# it to Facebook and YouTube. Runs later than generation on purpose, so
+# there's always a healthy buffer between the audio landing and this going
+# out publicly.
+
+on:
+  schedule:
+    # 02:00 UTC = 4:00am South Africa time.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date to post (YYYY-MM-DD). Leave blank for today (SA time)."
+        required: false
+        default: ""
+
+concurrency:
+  group: post-readings
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - name: Ensure ffmpeg is installed
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
+
+      - name: Build readings video (shared by Facebook and YouTube)
+        run: node scripts/build-social-video.js ${{ github.event.inputs.date }}
+
+      - name: Post to Facebook
+        continue-on-error: true # never let one platform's failure affect the other
+        run: node scripts/post-to-facebook.js ${{ github.event.inputs.date }}
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+
+      - name: Post to YouTube
+        continue-on-error: true # never let one platform's failure affect the other
+        run: node scripts/post-to-youtube.js ${{ github.event.inputs.date }}
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

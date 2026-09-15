@@ -40,8 +40,8 @@ import { google } from "googleapis";
 const PORT = 43219;
 const REDIRECT_URI = `http://localhost:${PORT}`;
 
-const clientId = process.env.YT_CLIENT_ID;
-const clientSecret = process.env.YT_CLIENT_SECRET;
+const clientId = process.env.YT_CLIENT_ID?.trim();
+const clientSecret = process.env.YT_CLIENT_SECRET?.trim();
 
 if (!clientId || !clientSecret) {
   console.error("FAILED: Set YT_CLIENT_ID and YT_CLIENT_SECRET first — see the comment at the top of this file.");

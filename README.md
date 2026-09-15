@@ -156,6 +156,10 @@ free tier of 1,000,000/month for these voices. Expected cost: **$0**.
    redeploys automatically. Audio older than 14 days is pruned.
 3. The app checks `/audio/<date>.json`; if present it plays the MP3.
 
+Posting the day's readings and reflection to Facebook/YouTube happens later,
+in its own separate workflows — see **Daily Facebook posting**, **Daily
+YouTube posting**, and **Daily reflection posting to social media** below.
+
 ## Safety limits (built in)
 
 - One date per run, no retry loops.
@@ -300,15 +304,20 @@ node scripts/post-to-facebook.js --dry-run
 node scripts/post-to-facebook.js
 ```
 
-The dry run saves the built video locally (`.fb-post-<date>.mp4`) so you can
-watch it before ever posting for real.
+The dry run needs a pre-built video first — run
+`node scripts/build-social-video.js` before it (see `socialVideoPath()` in
+`scripts/build-social-video.js`), so you can watch it before ever posting
+for real.
 
 ## How it fits in
 
-- Runs automatically as the last step of the nightly job, after audio and
-  reflection generation.
-- Requires the day's audio file to already exist — refuses to run
-  otherwise (run order matters: audio → reflection → Facebook post).
+- Runs automatically in its own scheduled workflow
+  (`.github/workflows/post-readings.yml`), at **4:00am South Africa time**
+  — a few hours after `generate-audio.yml` produces the day's audio, so
+  there's always a healthy buffer between generation and posting.
+- Requires the day's audio to already exist (produced by the earlier
+  `generate-audio.yml` run) and the video to already be built (the first
+  step of `post-readings.yml`) — refuses to run otherwise.
 - A missing reflection isn't fatal — the post is just built without that
   section.
 - Uses `graph-video.facebook.com`, the endpoint for uploading videos to a
@@ -388,9 +397,77 @@ node scripts/post-to-youtube.js             # real upload
 
 ## How it fits in
 
-- Runs as the last step of the nightly job, after the Facebook post.
+- Runs in the same scheduled workflow as the Facebook post
+  (`.github/workflows/post-readings.yml`), at **4:00am South Africa time**,
+  after the Facebook step.
 - Uploads default to **public** — change `PRIVACY_STATUS` in
   `post-to-youtube.js` to `"unlisted"` if you'd rather review each video
   before it goes live.
 - A YouTube failure never affects Facebook, the audio, or the reflection
   — each platform step is independent.
+
+## Troubleshooting: `FAILED: invalid_client`
+
+This means Google rejected `YT_CLIENT_ID`/`YT_CLIENT_SECRET` themselves —
+before it even checks whether `YT_REFRESH_TOKEN` is valid. It's not the
+same as `invalid_grant` (which means the refresh token specifically has
+expired or been revoked). Causes, in order of likelihood:
+
+- The OAuth client's secret was regenerated in Google Cloud Console
+  (**APIs & Services → Credentials**) without updating the `YT_CLIENT_SECRET`
+  GitHub secret to match.
+- The OAuth client itself was deleted.
+- A stray trailing newline/space got pasted into the GitHub secret (the
+  scripts now `.trim()` these values, which rules this out going forward,
+  but doesn't fix an already-corrupted stored secret).
+- The YouTube channel moved to a different Google account than the one the
+  OAuth client/refresh token were authorized under.
+
+Fix: re-run `node scripts/youtube-auth-setup.js` (see **One-time setup**
+above) signed in with whichever Google account currently owns the channel,
+and update all three GitHub secrets (`YT_CLIENT_ID`, `YT_CLIENT_SECRET`,
+`YT_REFRESH_TOKEN`) together so they're guaranteed consistent.
+
+---
+
+# Daily reflection posting to social media
+
+A second, separate daily post — distinct from the readings post above —
+containing **only** the day's quiet reflection (the same reflection shown
+in the PWA, and the same reflection text already included inside the
+readings post's description/caption) as its own standalone video: the
+reflection's HD audio over a backdrop photo, built the same way as the
+readings video. Exists purely to give the reflection its own piece of
+content, separate from the full readings.
+
+No new secrets needed — reuses `FB_PAGE_ID`/`FB_PAGE_TOKEN` and
+`YT_CLIENT_ID`/`YT_CLIENT_SECRET`/`YT_REFRESH_TOKEN` from the sections
+above.
+
+## Test locally first
+
+```bash
+export FB_PAGE_ID="...."
+export FB_PAGE_TOKEN="...."
+export YT_CLIENT_ID="...."
+export YT_CLIENT_SECRET="...."
+export YT_REFRESH_TOKEN="...."
+
+node scripts/build-reflection-video.js
+node scripts/post-reflection-to-facebook.js --dry-run
+node scripts/post-reflection-to-youtube.js --dry-run
+```
+
+## How it fits in
+
+- Runs in its own scheduled workflow
+  (`.github/workflows/post-reflection.yml`), at **6:30am South Africa
+  time** — after the readings post at 4am.
+- A missing reflection for the date is **not an error**: reflection
+  generation (`generate-reflection.js`, in the nightly `generate-audio.yml`
+  job) runs with `continue-on-error` and won't always produce one.
+  `build-reflection-video.js` and both `post-reflection-to-*.js` scripts
+  all exit cleanly (code 0) with "nothing to post today" on such a day.
+- Uses `scripts/build-reflection-video.js` (separate from
+  `build-social-video.js`) to avoid overwriting the readings video with
+  the same filename, since both can exist for the same date at once.

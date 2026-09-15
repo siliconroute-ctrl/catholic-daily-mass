@@ -162,8 +162,10 @@ async function main() {
     return;
   }
 
-  const pageId = process.env.FB_PAGE_ID;
-  const token = process.env.FB_PAGE_TOKEN;
+  // .trim() guards against a stray trailing newline/space from copy-pasting
+  // into GitHub Secrets.
+  const pageId = process.env.FB_PAGE_ID?.trim();
+  const token = process.env.FB_PAGE_TOKEN?.trim();
   if (!pageId || !token) throw new Error("FB_PAGE_ID and FB_PAGE_TOKEN must be set.");
 
   console.log("  Uploading to Facebook …");

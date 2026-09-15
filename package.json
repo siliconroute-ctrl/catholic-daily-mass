@@ -13,7 +13,10 @@
     "post-to-facebook": "node scripts/post-to-facebook.js",
     "youtube-auth-setup": "node scripts/youtube-auth-setup.js",
     "build-social-video": "node scripts/build-social-video.js",
-    "post-to-youtube": "node scripts/post-to-youtube.js"
+    "post-to-youtube": "node scripts/post-to-youtube.js",
+    "build-reflection-video": "node scripts/build-reflection-video.js",
+    "post-reflection-to-facebook": "node scripts/post-reflection-to-facebook.js",
+    "post-reflection-to-youtube": "node scripts/post-reflection-to-youtube.js"
   },
   "dependencies": {
     "react": "^18.3.1",
