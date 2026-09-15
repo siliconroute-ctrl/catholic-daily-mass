@@ -1,0 +1,62 @@
+name: Post daily reflection to Facebook and YouTube
+# A second daily post, separate from the readings post in post-readings.yml:
+# builds a video from just the day's reflection audio (same reflection
+# shown in the PWA) and posts it to Facebook and YouTube. Runs later in the
+# morning as its own, standalone piece of content.
+#
+# A missing reflection for a date is not an error — reflection generation
+# is best-effort — so build-reflection-video.js and the two posting
+# scripts all exit cleanly with nothing to do on such a day.
+
+on:
+  schedule:
+    # 04:30 UTC = 6:30am South Africa time.
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date to post (YYYY-MM-DD). Leave blank for today (SA time)."
+        required: false
+        default: ""
+
+concurrency:
+  group: post-reflection
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - name: Ensure ffmpeg is installed
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
+
+      - name: Build reflection video (shared by Facebook and YouTube)
+        run: node scripts/build-reflection-video.js ${{ github.event.inputs.date }}
+
+      - name: Post reflection to Facebook
+        continue-on-error: true # never let one platform's failure affect the other
+        run: node scripts/post-reflection-to-facebook.js ${{ github.event.inputs.date }}
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+
+      - name: Post reflection to YouTube
+        continue-on-error: true # never let one platform's failure affect the other
+        run: node scripts/post-reflection-to-youtube.js ${{ github.event.inputs.date }}
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

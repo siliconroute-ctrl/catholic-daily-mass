@@ -166,9 +166,13 @@ const TAGS = [
 
 // ---------- upload to YouTube ----------
 async function uploadVideo({ videoPath, title, description }) {
-  const clientId = process.env.YT_CLIENT_ID;
-  const clientSecret = process.env.YT_CLIENT_SECRET;
-  const refreshToken = process.env.YT_REFRESH_TOKEN;
+  // .trim() guards against a stray trailing newline/space from copy-pasting
+  // into GitHub Secrets — Google's OAuth server rejects a client_id/secret
+  // with invisible whitespace as "invalid_client", which otherwise looks
+  // identical to genuinely wrong credentials.
+  const clientId = process.env.YT_CLIENT_ID?.trim();
+  const clientSecret = process.env.YT_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.YT_REFRESH_TOKEN?.trim();
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error("YT_CLIENT_ID, YT_CLIENT_SECRET, and YT_REFRESH_TOKEN must all be set.");
   }
@@ -176,7 +180,22 @@ async function uploadVideo({ videoPath, title, description }) {
   const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
   oauth2Client.setCredentials({ refresh_token: refreshToken });
 
-  const youtube = google.youtube({ version: "v3", auth: oauth2Client });
+  let youtube;
+  try {
+    // Force the token refresh now, outside youtube.videos.insert(), so an
+    // auth failure ("invalid_client" / "invalid_grant") is reported clearly
+    // instead of surfacing as an opaque upload error.
+    await oauth2Client.getAccessToken();
+    youtube = google.youtube({ version: "v3", auth: oauth2Client });
+  } catch (err) {
+    const reason = err.response?.data?.error || err.message;
+    throw new Error(
+      `Google OAuth token refresh failed (${reason}). This means YT_CLIENT_ID/YT_CLIENT_SECRET/` +
+        `YT_REFRESH_TOKEN are stale or mismatched (e.g. the OAuth client was regenerated, or the ` +
+        `channel now belongs to a different Google account) — re-run scripts/youtube-auth-setup.js ` +
+        `and update all three GitHub secrets together.`
+    );
+  }
 
   const res = await youtube.videos.insert({
     part: ["snippet", "status"],
