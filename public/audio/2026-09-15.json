@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-15",
+  "day": "Our Lady of Sorrows on Tuesday of week 24 in Ordinary Time",
+  "generatedAt": "2026-09-15T00:45:15.020Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 332.97599999999994,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "penitential-act-intro",
+      "label": "Penitential Act (Invitation)",
+      "start": 15.576,
+      "end": 23.592
+    },
+    {
+      "key": "penitential-act",
+      "label": "Penitential Act",
+      "start": 23.592,
+      "end": 50.064
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 50.064,
+      "end": 115.27199999999999
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 115.27199999999999,
+      "end": 168.93599999999998
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 168.93599999999998,
+      "end": 183.93599999999998
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 183.93599999999998,
+      "end": 216.59999999999997
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 216.59999999999997,
+      "end": 259.82399999999996
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 259.82399999999996,
+      "end": 292.41599999999994
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 292.41599999999994,
+      "end": 321.04799999999994
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 321.04799999999994,
+      "end": 332.97599999999994
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
