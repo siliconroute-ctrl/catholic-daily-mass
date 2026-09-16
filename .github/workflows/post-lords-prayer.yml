@@ -9,10 +9,17 @@ name: Post Lord's Prayer to YouTube (16 Sep 2026 special)
 # to be manually removed afterward.
 
 on:
-  schedule:
-    # 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00 UTC
-    # = 8am, 10am, 12pm, 2pm, 4pm, 6pm, 8pm South Africa time.
-    - cron: "0 6,8,10,12,14,16,18 * * *"
+  # SCHEDULE TEMPORARILY DISABLED (16 Sep 2026): YT_REFRESH_TOKEN currently
+  # points at the wrong YouTube channel (@HolyCatholicMass instead of the
+  # real @catholicmass channel, which holds real subscriber history and
+  # irreplaceable family content) — 3 of today's occurrences already posted
+  # there in error. Re-enable the schedule block below once a
+  # verified-correct refresh token is saved. workflow_dispatch still works
+  # for manual, deliberate runs in the meantime.
+  # schedule:
+  #   # 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00 UTC
+  #   # = 8am, 10am, 12pm, 2pm, 4pm, 6pm, 8pm South Africa time.
+  #   - cron: "0 6,8,10,12,14,16,18 * * *"
   workflow_dispatch: {}
 
 concurrency:
