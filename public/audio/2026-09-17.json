@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-17",
+  "day": "Thursday of week 24 in Ordinary Time or Saint Robert Bellarmine, Bishop, Doctor or Saint Hildegard of Bingen, Virgin, Doctor",
+  "generatedAt": "2026-09-17T00:44:07.623Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 442.46399999999994,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "penitential-act-intro",
+      "label": "Penitential Act (Invitation)",
+      "start": 15.576,
+      "end": 23.592
+    },
+    {
+      "key": "penitential-act",
+      "label": "Penitential Act",
+      "start": 23.592,
+      "end": 50.064
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 50.064,
+      "end": 130.464
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 130.464,
+      "end": 178.296
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 178.296,
+      "end": 193.632
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 193.632,
+      "end": 326.08799999999997
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 326.08799999999997,
+      "end": 369.31199999999995
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 369.31199999999995,
+      "end": 401.90399999999994
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 401.90399999999994,
+      "end": 430.53599999999994
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 430.53599999999994,
+      "end": 442.46399999999994
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
