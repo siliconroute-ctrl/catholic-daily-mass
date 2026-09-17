@@ -51,6 +51,13 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
 
       - name: Post to YouTube
+        # DISABLED (17 Sep 2026): the last authorization run picked the
+        # wrong Google account at the browser consent screen (a personal
+        # account/@joaodegois channel instead of rcatholicmass@gmail.com),
+        # so YT_REFRESH_TOKEN posted to the wrong channel again. Re-enable
+        # (delete this `if`) once youtube-auth-setup.js has been re-run
+        # with the correct account confirmed and YT_REFRESH_TOKEN updated.
+        if: false
         continue-on-error: true # never let one platform's failure affect the other
         run: node scripts/post-to-youtube.js ${{ github.event.inputs.date }}
         env:
