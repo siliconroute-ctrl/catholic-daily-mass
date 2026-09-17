@@ -51,13 +51,6 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
 
       - name: Post to YouTube
-        # DISABLED (16 Sep 2026): YT_REFRESH_TOKEN currently points at the
-        # wrong YouTube channel (@HolyCatholicMass instead of the real
-        # @catholicmass channel, which holds real subscriber history and
-        # irreplaceable family content). Re-enable (delete this `if`) once a
-        # verified-correct refresh token is saved. The schedule above stays
-        # on so Facebook keeps posting in the meantime.
-        if: false
         continue-on-error: true # never let one platform's failure affect the other
         run: node scripts/post-to-youtube.js ${{ github.event.inputs.date }}
         env:
