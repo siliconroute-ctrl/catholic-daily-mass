@@ -197,24 +197,33 @@ async function uploadVideo({ videoPath, title, description }) {
     );
   }
 
-  const res = await youtube.videos.insert({
-    part: ["snippet", "status"],
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        tags: TAGS,
-        categoryId: "22", // "People & Blogs" — YouTube has no dedicated religious category
+  let res;
+  try {
+    res = await youtube.videos.insert({
+      part: ["snippet", "status"],
+      requestBody: {
+        snippet: {
+          title,
+          description,
+          tags: TAGS,
+          categoryId: "22", // "People & Blogs" — YouTube has no dedicated religious category
+        },
+        status: {
+          privacyStatus: PRIVACY_STATUS,
+          selfDeclaredMadeForKids: false,
+        },
       },
-      status: {
-        privacyStatus: PRIVACY_STATUS,
-        selfDeclaredMadeForKids: false,
+      media: {
+        body: fs.createReadStream(videoPath),
       },
-    },
-    media: {
-      body: fs.createReadStream(videoPath),
-    },
-  });
+    });
+  } catch (err) {
+    // err.message on a googleapis error is often just the bare HTTP status
+    // text (e.g. "Unauthorized") — the actual reason Google rejected the
+    // request lives in the JSON error body, which this surfaces instead.
+    const detail = err.response?.data?.error || err.errors || err.response?.data || err.message;
+    throw new Error(`YouTube upload rejected: ${JSON.stringify(detail)}`);
+  }
 
   return res.data;
 }

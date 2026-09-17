@@ -114,24 +114,30 @@ async function uploadVideo({ videoPath, title, description }) {
     );
   }
 
-  const res = await youtube.videos.insert({
-    part: ["snippet", "status"],
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        tags: TAGS,
-        categoryId: "22",
+  let res;
+  try {
+    res = await youtube.videos.insert({
+      part: ["snippet", "status"],
+      requestBody: {
+        snippet: {
+          title,
+          description,
+          tags: TAGS,
+          categoryId: "22",
+        },
+        status: {
+          privacyStatus: PRIVACY_STATUS,
+          selfDeclaredMadeForKids: false,
+        },
       },
-      status: {
-        privacyStatus: PRIVACY_STATUS,
-        selfDeclaredMadeForKids: false,
+      media: {
+        body: fs.createReadStream(videoPath),
       },
-    },
-    media: {
-      body: fs.createReadStream(videoPath),
-    },
-  });
+    });
+  } catch (err) {
+    const detail = err.response?.data?.error || err.errors || err.response?.data || err.message;
+    throw new Error(`YouTube upload rejected: ${JSON.stringify(detail)}`);
+  }
 
   return res.data;
 }
