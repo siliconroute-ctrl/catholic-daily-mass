@@ -1,0 +1,32 @@
+name: TEMP - Test playlist assignment
+# TEMPORARY diagnostic workflow, not part of the nightly automation —
+# removed after confirming Sunday Mass / Feast Days playlist assignment
+# works. See scripts/test-playlist-assignment.js.
+
+on:
+  workflow_dispatch:
+    inputs:
+      videoId:
+        required: true
+      playlists:
+        description: "Comma-separated playlist names"
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - name: Test playlist assignment
+        run: |
+          IFS=',' read -ra PLAYLISTS <<< "${{ github.event.inputs.playlists }}"
+          node scripts/test-playlist-assignment.js "${{ github.event.inputs.videoId }}" "${PLAYLISTS[@]}"
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
