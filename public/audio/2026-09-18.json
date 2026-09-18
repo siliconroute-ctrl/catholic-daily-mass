@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-18",
+  "day": "Friday of week 24 in Ordinary Time",
+  "generatedAt": "2026-09-18T00:31:47.727Z",
+  "voices": {
+    "readings": "en-GB-Neural2-A",
+    "gospel": "en-GB-Neural2-D"
+  },
+  "duration": 329.736,
+  "sections": [
+    {
+      "key": "bell",
+      "label": "Church Bell",
+      "start": 0,
+      "end": 4.776
+    },
+    {
+      "key": "blessing",
+      "label": "Opening Blessing",
+      "start": 4.776,
+      "end": 15.576
+    },
+    {
+      "key": "penitential-act-intro",
+      "label": "Penitential Act (Invitation)",
+      "start": 15.576,
+      "end": 23.592
+    },
+    {
+      "key": "penitential-act",
+      "label": "Penitential Act",
+      "start": 23.592,
+      "end": 50.064
+    },
+    {
+      "key": "Mass_R1",
+      "label": "First Reading",
+      "start": 50.064,
+      "end": 106.824
+    },
+    {
+      "key": "Mass_Ps",
+      "label": "Responsorial Psalm",
+      "start": 106.824,
+      "end": 165.864
+    },
+    {
+      "key": "Mass_GA",
+      "label": "Gospel Acclamation",
+      "start": 165.864,
+      "end": 178.464
+    },
+    {
+      "key": "Mass_G",
+      "label": "Gospel",
+      "start": 178.464,
+      "end": 213.36
+    },
+    {
+      "key": "creed",
+      "label": "Profession of Faith — the Apostles' Creed",
+      "start": 213.36,
+      "end": 256.584
+    },
+    {
+      "key": "spiritual-communion",
+      "label": "Act of Spiritual Communion",
+      "start": 256.584,
+      "end": 289.176
+    },
+    {
+      "key": "lords-prayer",
+      "label": "The Lord's Prayer",
+      "start": 289.176,
+      "end": 317.808
+    },
+    {
+      "key": "concluding-rite",
+      "label": "Concluding Rite",
+      "start": 317.808,
+      "end": 329.736
+    }
+  ],
+  "stitch": "ffmpeg-concat-filter"
+}
