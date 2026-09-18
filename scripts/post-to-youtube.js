@@ -30,6 +30,7 @@ import { fileURLToPath } from "node:url";
 import { google } from "googleapis";
 import { socialVideoPath } from "./build-social-video.js";
 import { fetchUniversalisData } from "./lib/fetch-universalis.js";
+import { formatLongDate } from "./lib/format-date.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -109,7 +110,7 @@ function buildChapters(manifestPath) {
 
 // ---------- build the title, description, and tags ----------
 export function buildTitle({ day, gospel }) {
-  const base = "Catholic Daily Mass";
+  const base = `Today's Mass — ${formatLongDate(isoDate)}`;
   // Compound feast days ("X or Y or Z") can be very long — the first
   // alternative alone is enough for a title; the full text still appears
   // in full in the description.

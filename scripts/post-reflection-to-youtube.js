@@ -28,6 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { google } from "googleapis";
 import { reflectionVideoPath } from "./build-reflection-video.js";
+import { formatLongDate } from "./lib/format-date.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -51,7 +52,7 @@ const isoDate = dateArg || sastToday();
 
 // ---------- build the title, description ----------
 export function buildTitle({ day }) {
-  const base = "A Reflection for Today's Mass";
+  const base = `Today's Reflection — ${formatLongDate(isoDate)}`;
   const shortDay = day ? day.split(/\s+\bor\b\s+/i)[0] : "";
   const withDay = shortDay ? `${base} — ${shortDay}` : base;
   if (withDay.length <= MAX_TITLE_CHARS) return withDay;

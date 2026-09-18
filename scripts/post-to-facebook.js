@@ -30,6 +30,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { socialVideoPath } from "./build-social-video.js";
 import { fetchUniversalisData } from "./lib/fetch-universalis.js";
+import { formatLongDate } from "./lib/format-date.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -83,7 +84,7 @@ function pick(v) {
 // ---------- build the post text ----------
 export function buildMessage({ day, gospel, reflectionText }) {
   const lines = [];
-  lines.push(`\u2728 Today's Mass \u2014 ${day || isoDate}`, "");
+  lines.push(`Today's Mass \u2014 ${formatLongDate(isoDate)}${day ? ` \u2014 ${day}` : ""}`, "");
   if (gospel) {
     lines.push(`\u271D\uFE0F Gospel${gospel.source ? ` (${gospel.source})` : ""}`, gospel.text, "");
   }

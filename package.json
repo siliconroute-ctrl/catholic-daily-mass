@@ -16,8 +16,7 @@
     "post-to-youtube": "node scripts/post-to-youtube.js",
     "build-reflection-video": "node scripts/build-reflection-video.js",
     "post-reflection-to-facebook": "node scripts/post-reflection-to-facebook.js",
-    "post-reflection-to-youtube": "node scripts/post-reflection-to-youtube.js",
-    "post-lords-prayer-to-youtube": "node scripts/post-lords-prayer-to-youtube.js"
+    "post-reflection-to-youtube": "node scripts/post-reflection-to-youtube.js"
   },
   "dependencies": {
     "react": "^18.3.1",
