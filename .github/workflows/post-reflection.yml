@@ -9,15 +9,9 @@ name: Post daily reflection to Facebook and YouTube
 # scripts all exit cleanly with nothing to do on such a day.
 
 on:
-  # SCHEDULE TEMPORARILY DISABLED (16 Sep 2026): YT_REFRESH_TOKEN currently
-  # points at the wrong YouTube channel (@HolyCatholicMass instead of the
-  # real @catholicmass channel, which holds real subscriber history and
-  # irreplaceable family content). Re-enable the schedule block below once
-  # a verified-correct refresh token is saved. workflow_dispatch still
-  # works for manual, deliberate runs in the meantime.
-  # schedule:
-  #   # 04:30 UTC = 6:30am South Africa time.
-  #   - cron: "30 4 * * *"
+  schedule:
+    # 04:30 UTC = 6:30am South Africa time.
+    - cron: "30 4 * * *"
   workflow_dispatch:
     inputs:
       date:

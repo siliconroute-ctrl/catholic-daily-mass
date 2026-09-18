@@ -12,7 +12,14 @@
  *
  * Auth: set YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN as
  * environment variables. Get these once via youtube-auth-setup.js — see
- * that file for full one-time setup instructions.
+ * that file for full one-time setup instructions. Needs the full
+ * `https://www.googleapis.com/auth/youtube` scope (not just
+ * `youtube.upload`) since it also assigns the upload to a playlist.
+ *
+ * After a successful upload, the video is added to "Weekly Mass" (Mon-Sat)
+ * or "Sunday Mass" (Sun), plus "Feast Days" on top of that for a fixed set
+ * of major dates — see lib/liturgical-calendar.js. Playlists are looked up
+ * by name and created if missing, so no playlist IDs need configuring.
  *
  * SAFETY:
  *  - One date per run, no retries, no loops.
@@ -22,6 +29,8 @@
  *  - Uploads default to "unlisted" is NOT used — videos post as public,
  *    matching the intent of a daily public ministry upload. Change
  *    PRIVACY_STATUS below if you'd rather review before publishing.
+ *  - A playlist-assignment failure is logged but never fails the run —
+ *    the video is already posted successfully by that point.
  */
 
 import fs from "node:fs";
@@ -30,6 +39,9 @@ import { fileURLToPath } from "node:url";
 import { google } from "googleapis";
 import { socialVideoPath } from "./build-social-video.js";
 import { fetchUniversalisData } from "./lib/fetch-universalis.js";
+import { formatLongDate } from "./lib/format-date.js";
+import { getPlaylistNames } from "./lib/liturgical-calendar.js";
+import { assignVideoToPlaylists } from "./lib/youtube-playlists.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -109,7 +121,7 @@ function buildChapters(manifestPath) {
 
 // ---------- build the title, description, and tags ----------
 export function buildTitle({ day, gospel }) {
-  const base = "Catholic Daily Mass";
+  const base = `Today's Mass — ${formatLongDate(isoDate)}`;
   // Compound feast days ("X or Y or Z") can be very long — the first
   // alternative alone is enough for a title; the full text still appears
   // in full in the description.
@@ -197,26 +209,35 @@ async function uploadVideo({ videoPath, title, description }) {
     );
   }
 
-  const res = await youtube.videos.insert({
-    part: ["snippet", "status"],
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        tags: TAGS,
-        categoryId: "22", // "People & Blogs" — YouTube has no dedicated religious category
+  let res;
+  try {
+    res = await youtube.videos.insert({
+      part: ["snippet", "status"],
+      requestBody: {
+        snippet: {
+          title,
+          description,
+          tags: TAGS,
+          categoryId: "22", // "People & Blogs" — YouTube has no dedicated religious category
+        },
+        status: {
+          privacyStatus: PRIVACY_STATUS,
+          selfDeclaredMadeForKids: false,
+        },
       },
-      status: {
-        privacyStatus: PRIVACY_STATUS,
-        selfDeclaredMadeForKids: false,
+      media: {
+        body: fs.createReadStream(videoPath),
       },
-    },
-    media: {
-      body: fs.createReadStream(videoPath),
-    },
-  });
+    });
+  } catch (err) {
+    // err.message on a googleapis error is often just the bare HTTP status
+    // text (e.g. "Unauthorized") — the actual reason Google rejected the
+    // request lives in the JSON error body, which this surfaces instead.
+    const detail = err.response?.data?.error || err.errors || err.response?.data || err.message;
+    throw new Error(`YouTube upload rejected: ${JSON.stringify(detail)}`);
+  }
 
-  return res.data;
+  return { data: res.data, youtube };
 }
 
 // ---------- main ----------
@@ -259,19 +280,29 @@ async function main() {
   console.log(`  Title: ${title}`);
   console.log(`  Description length: ${description.length} characters`);
 
+  const playlistNames = getPlaylistNames(isoDate);
+
   if (DRY_RUN) {
     console.log("\n--- DRY RUN: nothing uploaded to YouTube. ---\n");
     console.log(`TITLE:\n${title}\n`);
     console.log(`DESCRIPTION:\n${description}\n`);
     console.log(`TAGS:\n${TAGS.join(", ")}\n`);
+    console.log(`PLAYLISTS:\n${playlistNames.join(", ")}\n`);
     console.log(`Using pre-built video at: ${videoPath}`);
     return;
   }
 
   console.log("  Uploading to YouTube (this can take a few minutes) …");
-  const result = await uploadVideo({ videoPath, title, description });
+  const uploaded = await uploadVideo({ videoPath, title, description });
 
-  console.log(`\nDone! Video: https://youtu.be/${result.id}`);
+  console.log(`\nDone! Video: https://youtu.be/${uploaded.data.id}`);
+
+  console.log(`  Assigning to playlist(s): ${playlistNames.join(", ")} …`);
+  const playlistResults = await assignVideoToPlaylists(uploaded.youtube, uploaded.data.id, playlistNames);
+  for (const r of playlistResults) {
+    if (r.ok) console.log(`    ✓ Added to "${r.name}"`);
+    else console.warn(`    ⚠ Failed to add to "${r.name}": ${JSON.stringify(r.error)}`);
+  }
 }
 
 main().catch((err) => {

@@ -25,6 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { reflectionVideoPath } from "./build-reflection-video.js";
+import { formatLongDate } from "./lib/format-date.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -47,7 +48,7 @@ const isoDate = dateArg || sastToday();
 // ---------- build the post text ----------
 export function buildMessage({ day, reflectionText }) {
   const lines = [];
-  lines.push(`🕊️ A Quiet Reflection — ${day || isoDate}`, "");
+  lines.push(`Today's Reflection — ${formatLongDate(isoDate)}${day ? ` — ${day}` : ""}`, "");
   lines.push(reflectionText, "");
   lines.push(
     "📖 Read today's full readings, listen to today's Mass, and pray with us daily:",

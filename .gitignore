@@ -15,7 +15,3 @@ public/audio/.tmp-*
 # and build-reflection-video.js)
 .social-video-*.mp4
 .reflection-video-*.mp4
-
-# Temp working dir for the Lord's Prayer one-day special (16 Sep 2026) —
-# left behind on --dry-run for inspection; always gitignored.
-.tmp-lords-prayer-*

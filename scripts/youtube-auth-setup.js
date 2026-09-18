@@ -24,6 +24,12 @@
  *     the localhost redirect this script uses
  *  7. Download the credentials (or just copy the Client ID and Client
  *     Secret shown on screen)
+ *  8. Under "Data access" for this OAuth client, add the
+ *     `https://www.googleapis.com/auth/youtube` scope ("See, edit, and
+ *     permanently delete your YouTube videos, ratings, comments and
+ *     captions") — without this, this script still completes and prints
+ *     a refresh token, but every actual API call (upload, playlist
+ *     management) will fail with an auth error.
  *
  * Usage:
  *   export YT_CLIENT_ID="....apps.googleusercontent.com"
@@ -53,7 +59,12 @@ const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI
 const authUrl = oauth2Client.generateAuthUrl({
   access_type: "offline", // required to get a refresh token, not just a short-lived one
   prompt: "consent", // forces a refresh token even if you've authorized before
-  scope: ["https://www.googleapis.com/auth/youtube.upload"],
+  // The broader `youtube` scope, not just `youtube.upload` — the nightly
+  // scripts also assign each upload to a playlist (playlists.list/insert,
+  // playlistItems.insert), which youtube.upload alone doesn't cover. This
+  // scope must also be added under this OAuth client's "Data access" page
+  // in Cloud Console before it'll actually be granted.
+  scope: ["https://www.googleapis.com/auth/youtube"],
 });
 
 console.log("\n1. Open this URL in your browser (the one signed in to your YouTube channel):\n");

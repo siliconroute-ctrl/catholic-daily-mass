@@ -13,7 +13,9 @@
  *   node scripts/post-reflection-to-youtube.js --dry-run       # build everything, upload nothing
  *
  * Auth: same three secrets as post-to-youtube.js — YT_CLIENT_ID,
- * YT_CLIENT_SECRET, YT_REFRESH_TOKEN.
+ * YT_CLIENT_SECRET, YT_REFRESH_TOKEN — and the same broader `youtube`
+ * scope (not just `youtube.upload`), since this also assigns the upload
+ * to a playlist. See post-to-youtube.js for the playlist assignment rules.
  *
  * SAFETY:
  *  - One date per run, no retries, no loops.
@@ -21,6 +23,8 @@
  *    (code 0) since reflection generation is a best-effort nightly step
  *    that doesn't always produce one.
  *  - Uploads default to "public", matching post-to-youtube.js.
+ *  - A playlist-assignment failure is logged but never fails the run —
+ *    the video is already posted successfully by that point.
  */
 
 import fs from "node:fs";
@@ -28,6 +32,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { google } from "googleapis";
 import { reflectionVideoPath } from "./build-reflection-video.js";
+import { formatLongDate } from "./lib/format-date.js";
+import { getPlaylistNames } from "./lib/liturgical-calendar.js";
+import { assignVideoToPlaylists } from "./lib/youtube-playlists.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -51,7 +58,7 @@ const isoDate = dateArg || sastToday();
 
 // ---------- build the title, description ----------
 export function buildTitle({ day }) {
-  const base = "A Reflection for Today's Mass";
+  const base = `Today's Reflection — ${formatLongDate(isoDate)}`;
   const shortDay = day ? day.split(/\s+\bor\b\s+/i)[0] : "";
   const withDay = shortDay ? `${base} — ${shortDay}` : base;
   if (withDay.length <= MAX_TITLE_CHARS) return withDay;
@@ -114,26 +121,32 @@ async function uploadVideo({ videoPath, title, description }) {
     );
   }
 
-  const res = await youtube.videos.insert({
-    part: ["snippet", "status"],
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        tags: TAGS,
-        categoryId: "22",
+  let res;
+  try {
+    res = await youtube.videos.insert({
+      part: ["snippet", "status"],
+      requestBody: {
+        snippet: {
+          title,
+          description,
+          tags: TAGS,
+          categoryId: "22",
+        },
+        status: {
+          privacyStatus: PRIVACY_STATUS,
+          selfDeclaredMadeForKids: false,
+        },
       },
-      status: {
-        privacyStatus: PRIVACY_STATUS,
-        selfDeclaredMadeForKids: false,
+      media: {
+        body: fs.createReadStream(videoPath),
       },
-    },
-    media: {
-      body: fs.createReadStream(videoPath),
-    },
-  });
+    });
+  } catch (err) {
+    const detail = err.response?.data?.error || err.errors || err.response?.data || err.message;
+    throw new Error(`YouTube upload rejected: ${JSON.stringify(detail)}`);
+  }
 
-  return res.data;
+  return { data: res.data, youtube };
 }
 
 // ---------- main ----------
@@ -167,19 +180,29 @@ async function main() {
   console.log(`  Title: ${title}`);
   console.log(`  Description length: ${description.length} characters`);
 
+  const playlistNames = getPlaylistNames(isoDate);
+
   if (DRY_RUN) {
     console.log("\n--- DRY RUN: nothing uploaded to YouTube. ---\n");
     console.log(`TITLE:\n${title}\n`);
     console.log(`DESCRIPTION:\n${description}\n`);
     console.log(`TAGS:\n${TAGS.join(", ")}\n`);
+    console.log(`PLAYLISTS:\n${playlistNames.join(", ")}\n`);
     console.log(`Using pre-built video at: ${videoPath}`);
     return;
   }
 
   console.log("  Uploading to YouTube (this can take a few minutes) …");
-  const result = await uploadVideo({ videoPath, title, description });
+  const { data, youtube } = await uploadVideo({ videoPath, title, description });
 
-  console.log(`\nDone! Video: https://youtu.be/${result.id}`);
+  console.log(`\nDone! Video: https://youtu.be/${data.id}`);
+
+  console.log(`  Assigning to playlist(s): ${playlistNames.join(", ")} …`);
+  const playlistResults = await assignVideoToPlaylists(youtube, data.id, playlistNames);
+  for (const r of playlistResults) {
+    if (r.ok) console.log(`    ✓ Added to "${r.name}"`);
+    else console.warn(`    ⚠ Failed to add to "${r.name}": ${JSON.stringify(r.error)}`);
+  }
 }
 
 main().catch((err) => {
