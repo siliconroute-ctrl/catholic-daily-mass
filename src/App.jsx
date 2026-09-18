@@ -38,6 +38,7 @@ export default function App() {
   const [reflection, setReflection] = useState(null); // today's reflection, or null
   const [showReflection, setShowReflection] = useState(false);
   const [reflectionPlaying, setReflectionPlaying] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const topRef = useRef(null);
   const audioRef = useRef(null);
   const reflectionAudioRef = useRef(null);
@@ -215,6 +216,61 @@ export default function App() {
   };
 
   const onStop = () => stopAll();
+
+  const APP_URL = "https://catholic-daily-mass.vercel.app/";
+  const dayName = state.status === "ready" ? state.data.day : "";
+  const shareApiAvailable = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const clipboardAvailable = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText;
+
+  const onShare = async () => {
+    const text = dayName ? `Today's Mass — ${dayName}` : "Catholic Daily Mass";
+
+    // Preferred: share the actual HD audio file, so it lands as a real
+    // playable voice note (e.g. in WhatsApp) rather than just a link.
+    if (hdAudio && typeof navigator.canShare === "function") {
+      try {
+        const res = await fetch(hdAudio.src);
+        if (res.ok) {
+          const blob = await res.blob();
+          const file = new File([blob], `${isoDateKey(date)}.mp3`, {
+            type: blob.type || "audio/mpeg",
+          });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: "Catholic Daily Mass", text });
+            return;
+          }
+        }
+      } catch (err) {
+        // AbortError means the user cancelled the share sheet — leave it
+        // at that rather than immediately popping up a second one. Any
+        // other error (fetch failure, file rejected, etc.) falls through
+        // to the text+link share below instead.
+        if (err.name === "AbortError") return;
+      }
+    }
+
+    // Fallback: share the app link with a short text summary.
+    try {
+      await navigator.share({
+        title: "Catholic Daily Mass",
+        text: `${text}. Read and listen here:`,
+        url: APP_URL,
+      });
+    } catch {
+      // AbortError (cancelled) or any other failure — nothing more to do.
+    }
+  };
+
+  const onCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(APP_URL);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // Clipboard permission denied or unsupported at runtime — nothing
+      // more we can do; the button just won't show the "Copied!" state.
+    }
+  };
 
   if (showAbout) {
     return (
@@ -473,6 +529,15 @@ export default function App() {
           <button className="listen-main" onClick={onListen}>
             {playState === "playing" ? "Pause" : playState === "paused" ? "Resume" : "\u25B6 Listen to the readings"}
           </button>
+          {shareApiAvailable ? (
+            <button className="share-btn" onClick={onShare}>
+              {"\u2197 Share"}
+            </button>
+          ) : clipboardAvailable ? (
+            <button className="share-btn" onClick={onCopyLink}>
+              {linkCopied ? "Copied!" : "Copy link"}
+            </button>
+          ) : null}
           {playState !== "idle" && (
             <button className="listen-stop" onClick={onStop}>
               Stop

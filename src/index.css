@@ -503,6 +503,22 @@ body {
   min-height: 52px;
 }
 
+.share-btn {
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--vellum);
+  color: var(--garnet);
+  border: 1.5px solid var(--garnet);
+  border-radius: 999px;
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  min-height: 52px;
+}
+
+.share-btn:hover {
+  background: var(--vellum-deep);
+}
+
 /* Focus + reduced motion */
 button:focus-visible,
 a:focus-visible {
